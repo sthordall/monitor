@@ -12,6 +12,7 @@ import Data.Text.Lazy (pack)
 import Data.Time (UTCTime, getCurrentTime)
 import Engine
 import Models
+import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Middleware.RequestLogger
 import Opts
 import System.Exit (exitWith)
@@ -51,6 +52,7 @@ main = do
     startEngine opts var
     scotty optsMonitorPort $ do
       middleware logStdoutDev
+      middleware simpleCors
       get "/status" $ do
         (reports, _) <- liftIO $ readMVar var
         json reports

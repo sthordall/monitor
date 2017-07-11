@@ -6,7 +6,7 @@ let
 
   f = { mkDerivation, aeson, base, filemanip, filepath
       , optparse-applicative, process, scotty, stdenv, text, time, timeit
-      , wai-extra
+      , wai-cors, wai-extra
       }:
       mkDerivation {
         pname = "monitor";
@@ -16,7 +16,7 @@ let
         isExecutable = true;
         executableHaskellDepends = [
           aeson base filemanip filepath optparse-applicative process scotty
-          text time timeit wai-extra
+          text time timeit wai-cors wai-extra
         ];
         homepage = "https://github.com/kuznero/scripts/monitoring/monitor#README";
         description = "Monitoring aggregator";
