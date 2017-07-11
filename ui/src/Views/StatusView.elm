@@ -35,36 +35,152 @@ config model =
 status : Model -> Html Msg
 status model =
     let
-        ps =
+        sortMode =
+            model.status.sortBy
+
+        filter =
+            model.status.filter
+
+        rs =
             model.status.records
 
+        okStyle =
+            style [ ( "width", "100px" ), ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "green" ), ( "text-align", "center" ) ]
+
+        warningStyle =
+            style [ ( "width", "100px" ), ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "orange" ), ( "text-align", "center" ), ( "font-weight", "bold" ) ]
+
+        errorStyle =
+            style [ ( "width", "100px" ), ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "#a94442" ), ( "text-align", "center" ), ( "font-weight", "bold" ) ]
+
+        rcStyle resultCode =
+            case resultCode of
+                "OK" ->
+                    okStyle
+
+                "Warning" ->
+                    warningStyle
+
+                _ ->
+                    errorStyle
+
         headerCellStyle =
-            style [ ( "padding-right", "35px" ), ( "padding-top", "10px" ), ( "padding-bottom", "10px" ), ( "text-align", "center" ), ( "font-size", "1.2em" ) ]
-
-        cellCStyle =
-            style [ ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "text-align", "center" ) ]
-
-        dateTimeStyle =
-            style [ ( "padding-right", "35px" ), ( "text-align", "right" ), ( "font-family", "sans-serif" ), ( "color", "#286090" ) ]
-
-        valueCellStyle =
-            style [ ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "#286090" ), ( "text-align", "right" ), ( "font-weight", "lighter" ) ]
-
-        resultValueCellStyle =
-            style [ ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "#a94442" ), ( "text-align", "right" ) ]
-
-        filterStyle =
-            style [ ( "font-family", "'Fira Mono', monospace" ), ( "width", "100px" ), ( "text-align", "center" ), ( "border-style", "outset" ), ( "border-width", "0px 0px 1px 0px" ), ( "border-color", "#e8e8e8" ), ( "color", "#d9534f" ) ]
-
-        mkRow : Record -> Html Msg
-        mkRow record =
-            tr []
-                [ td [] [ b [] [ text record.result.resultCode ] ]
-                , td [] [ text record.path ]
+            style
+                [ ( "padding-right", "35px" )
+                , ( "padding-top", "10px" )
+                , ( "padding-bottom", "10px" )
+                , ( "text-align", "center" )
+                , ( "font-size", "1.2em" )
                 ]
 
+        cell120pxLStyle =
+            style
+                [ ( "padding-right", "35px" )
+                , ( "padding-bottom", "3px" )
+                , ( "text-align", "left" )
+                , ( "width", "120px" )
+                ]
+
+        cellLStyle =
+            style
+                [ ( "padding-right", "35px" )
+                , ( "padding-bottom", "3px" )
+                , ( "text-align", "left" )
+                ]
+
+        cellFillLStyle =
+            style
+                [ ( "padding-right", "35px" )
+                , ( "padding-bottom", "3px" )
+                , ( "text-align", "left" )
+                , ( "width", "80%" )
+                ]
+
+        dateTimeStyle =
+            style
+                [ ( "padding-bottom", "1.3em" )
+                , ( "text-align", "left" )
+                , ( "font-family", "sans-serif" )
+                , ( "color", "#286090" )
+                ]
+
+        filterStyle =
+            style
+                [ ( "font-family", "'Fira Mono', monospace" )
+                , ( "margin-bottom", "1.2em" )
+                , ( "text-align", "center" )
+                , ( "border-style", "outset" )
+                , ( "border-width", "0px 0px 1px 0px" )
+                , ( "border-color", "#e8e8e8" )
+                , ( "color", "#d9534f" )
+                ]
+
+        mkRow : Record -> List (Html Msg)
+        mkRow entry =
+            [ tr []
+                [ td [ rcStyle entry.result.resultCode ] [ text entry.result.resultCode ]
+                , td [ cellFillLStyle, colspan 2 ] [ text entry.path ]
+                , td [] []
+                ]
+            ]
+                ++ (if entry.result.resultCode /= "OK" then
+                        [ tr []
+                            [ td [ colspan 3 ] [ pre [ style [ ( "width", "90%" ) ] ] [ text entry.result.output ] ]
+                            , td [] []
+                            , td [] []
+                            ]
+                        ]
+                    else
+                        []
+                   )
+
+        resultCodeWeight : String -> Int
+        resultCodeWeight resultCode =
+            case resultCode of
+                "OK" -> 2
+                "Warning" -> 1
+                _ -> 0
+
         orderedRecords =
-            ps |> List.sortBy .path
+            case sortMode of
+                ByPath ->
+                    rs |> List.sortBy .path
+
+                BySeverity ->
+                    rs |> List.sortBy (\r -> resultCodeWeight r.result.resultCode)
+
+        matchesFilter : Record -> Bool
+        matchesFilter r =
+            let
+                reduce : Char -> String -> String
+                reduce ch line =
+                    case ch of
+                        '*' ->
+                            ".+" ++ line
+
+                        _ ->
+                            String.fromChar ch ++ line
+
+                prepRegex : String -> String
+                prepRegex line =
+                    line |> R.escape |> String.split "\\*" |> String.join "*" |> String.foldr reduce ""
+
+                path =
+                    filter.path |> prepRegex
+
+                resultCode =
+                    filter.resultCode |> prepRegex
+
+                matchesPath =
+                    r.path |> R.contains (R.regex path |> R.caseInsensitive)
+
+                matchesResultCode =
+                    r.result.resultCode |> R.contains (R.regex resultCode |> R.caseInsensitive)
+            in
+                matchesPath && matchesResultCode
+
+        filterRecords =
+            orderedRecords |> List.filter matchesFilter
 
         padWithN : Int -> a -> String
         padWithN n =
@@ -82,20 +198,39 @@ status model =
                         ++ ":"
                         ++ padWithN 2 (Date.second x)
     in
-        table [ style [ ( "font-family", "'Fira Mono', monospace" ), ( "font-size", "1em" ), ( "margin-bottom", "10px" ), ( "margin-top", "20px" ) ] ]
+        table [ style [ ( "width", "100%" ), ( "font-family", "'Fira Mono', monospace" ), ( "font-size", "1em" ), ( "margin-bottom", "10px" ), ( "margin-top", "20px" ) ] ]
             ([ tr []
-                [ th [] []
-                , th [] []
+                [ td [ cell120pxLStyle ]
+                    [ input
+                        [ id "result-code"
+                        , class "form-control"
+                        , onInput (\resultCode -> StatusMsg (InputFilterCmd model.status.filter.path resultCode))
+                        , spellcheck False
+                        , filterStyle
+                        ]
+                        []
+                    ]
+                , td [ cellLStyle ]
+                    [ input
+                        [ id "path"
+                        , class "form-control"
+                        , onInput (\path -> StatusMsg (InputFilterCmd path model.status.filter.resultCode))
+                        , spellcheck False
+                        , filterStyle
+                        ]
+                        []
+                    ]
+                , td [ dateTimeStyle ] [ text lastUpdated ]
                 ]
              ]
-                ++ (ps |> List.map mkRow)
+                ++ (filterRecords |> List.map mkRow |> List.concat)
             )
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ h2 [] [ text "Status Records" ]
+        [ h2 [] [ text "Status" ]
         , errorDetailsIfAny model
         , status model
         , div [ style [ ( "padding-bottom", "3em" ) ] ] []

@@ -29,9 +29,22 @@ type alias Config =
     }
 
 
+type RecordsSortMode
+    = ByPath
+    | BySeverity
+
+
+type alias RecordsFilter =
+    { path : String
+    , resultCode : String
+    }
+
+
 type alias Status =
     { records : List Record
     , lastUpdated : Maybe Date
+    , sortBy : RecordsSortMode
+    , filter : RecordsFilter
     }
 
 

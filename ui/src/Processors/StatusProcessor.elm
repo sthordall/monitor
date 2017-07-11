@@ -49,22 +49,17 @@ process model cmd =
             ( { model | errorMessage = Just (showHttpError err) }, Cmd.none )
 
         QueryStatusCompletedCmd (Ok ( now, records )) ->
-            ( { model | status = Status records ( Just now ) }, Cmd.none )
+            let
+                status = model.status
+            in
+                ( { model | status = { status | records = records, lastUpdated = Just now } }, Cmd.none )
 
-        -- QueryPositionsCompletedCmd (Ok ( now, positions )) ->
-        --     let
-        --         risk =
-        --             model.risk
-        --     in
-        --         ( { model | risk = { risk | positions = positions, lastUpdated = Just now } }, Cmd.none )
+        InputFilterCmd path resultCode ->
+            let
+                status =
+                    model.status
 
-        InputFilterCmd ccy storage ->
-            ( model, Cmd.none )
-            -- let
-            --     risk =
-            --         model.risk
-
-            --     filter =
-            --         model.risk.filter
-            -- in
-            --     ( { model | risk = { risk | filter = { filter | ccy = ccy, storage = storage } } }, Cmd.none )
+                filter =
+                    model.status.filter
+            in
+                ( { model | status = { status | filter = { filter | path = path, resultCode = resultCode } } }, Cmd.none )

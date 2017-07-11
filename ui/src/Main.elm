@@ -34,10 +34,22 @@ initModel flags =
                 else
                     SetupView
             , errorMessage = Nothing
-            , status = Status [] Nothing
+            , status = initStatus
             }
     in
         ( model, StatusMsg QueryStatusCmd |> Task.succeed |> Task.perform identity )
+
+
+initStatus : Status
+initStatus =
+    { records = []
+    , lastUpdated = Nothing
+    , sortBy = BySeverity
+    , filter =
+        { path = ""
+        , resultCode = ""
+        }
+    }
 
 
 subscriptions : Model -> Sub Msg
