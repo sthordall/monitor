@@ -13,6 +13,7 @@ type alias Flags =
 type View
     = SetupView
     | StatusListView
+    | StatusDashboard
 
 
 type alias Model =
