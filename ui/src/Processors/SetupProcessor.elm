@@ -3,7 +3,7 @@ module Processors.SetupProcessor exposing (..)
 import Http
 import Model exposing (..)
 import Msg exposing (..)
-import Processors.StatusProcessor as StatusProc
+import Processors.StatusListViewProcessor as StatusListViewProc
 
 
 runWithAddress : Model -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -22,5 +22,5 @@ process model cmd =
         InputAddressCmd address ->
             ( { model | config = (Config address), errorMessage = Nothing }, Cmd.none )
 
-        ConnectCmd ->
-            runWithAddress model (StatusProc.process { model | isConnected = True } QueryStatusCmd)
+        ConnectCmd _ ->
+            runWithAddress model (StatusListViewProc.process { model | isConnected = True } QueryListViewStatusCmd)

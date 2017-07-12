@@ -1,4 +1,4 @@
-module Views.StatusView exposing (..)
+module Views.StatusListView exposing (..)
 
 import Date
 import Html exposing (..)
@@ -204,7 +204,7 @@ status model =
                     [ input
                         [ id "result-code"
                         , class "form-control"
-                        , onInput (\resultCode -> StatusMsg (InputFilterCmd model.status.filter.path resultCode))
+                        , onInput (\resultCode -> ListViewStatusMsg (InputListViewFilterCmd model.status.filter.path resultCode))
                         , spellcheck False
                         , filterStyle
                         ]
@@ -214,7 +214,7 @@ status model =
                     [ input
                         [ id "path"
                         , class "form-control"
-                        , onInput (\path -> StatusMsg (InputFilterCmd path model.status.filter.resultCode))
+                        , onInput (\path -> ListViewStatusMsg (InputListViewFilterCmd path model.status.filter.resultCode))
                         , spellcheck False
                         , filterStyle
                         ]

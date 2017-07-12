@@ -8,19 +8,24 @@ import Time exposing (Time)
 
 type Msg
     = SetupMsg SetupCmd
-    | StatusMsg StatusCmd
+    | ListViewStatusMsg ListViewStatusCmd
 
 
 type ErrorMessage
     = String
 
 
+type ViewMode
+    = ListView
+    | Dashboard
+
+
 type SetupCmd
     = InputAddressCmd String
-    | ConnectCmd
+    | ConnectCmd ViewMode
 
 
-type StatusCmd
-    = QueryStatusCmd
-    | QueryStatusCompletedCmd (Result Http.Error ( Date, List Record ))
-    | InputFilterCmd String String
+type ListViewStatusCmd
+    = QueryListViewStatusCmd
+    | QueryListViewStatusCompletedCmd (Result Http.Error ( Date, List Record ))
+    | InputListViewFilterCmd String String

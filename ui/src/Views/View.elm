@@ -2,7 +2,7 @@ module Views.View exposing (..)
 
 import Model exposing (..)
 import Msg exposing (..)
-import Views.StatusView as Status
+import Views.StatusListView as StatusListView
 import Views.SetupView as Setup
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,8 +15,8 @@ startView model =
             case model.view of
                 SetupView ->
                     Setup.view
-                StatusView ->
-                    Status.view
+                StatusListView ->
+                    StatusListView.view
     in
         div [ class "container" ]
             [ p [] []

@@ -43,21 +43,28 @@ serverExamples xs =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h2 [] [ text "Server details" ]
-        , Html.form
-            [ class "form"
-            , onSubmit (SetupMsg ConnectCmd)
-            ]
-            [ serverExamples
-                [ ( "Local server", "http://127.0.0.1:3000/" )
+    let
+        btnStyle =
+            style [ ( "margin-right", "0.5em" ) ]
+    in
+        div []
+            [ h2 [] [ text "Server details" ]
+            , Html.form
+                [ class "form"
+                , onSubmit (SetupMsg (ConnectCmd ListView))
                 ]
-            , addressField model.config
-            ]
-        , div [ class "form-actions", style [ ( "float", "left" ) ] ]
-            [ button [ class "btn btn-primary", onClick (SetupMsg ConnectCmd) ]
-                [ text "Connect ..."
+                [ serverExamples
+                    [ ( "Local server", "http://127.0.0.1:3000/" )
+                    ]
+                , addressField model.config
                 ]
+            , div [ class "form-actions", style [ ( "float", "left" ) ] ]
+                [ button [ btnStyle, class "btn btn-primary", onClick (SetupMsg (ConnectCmd ListView)) ]
+                    [ text "List view ..."
+                    ]
+                , button [ btnStyle, class "btn btn-primary", onClick (SetupMsg (ConnectCmd Dashboard)) ]
+                    [ text "Dashboard ..."
+                    ]
+                ]
+            , div [ class "error-message", style [ ( "float", "left" ), ( "margin", "5px 0 0 10px" ) ] ] [ text (withDefault "" model.errorMessage) ]
             ]
-        , div [ class "error-message", style [ ( "float", "left" ), ( "margin", "5px 0 0 10px" ) ] ] [ text (withDefault "" model.errorMessage) ]
-        ]

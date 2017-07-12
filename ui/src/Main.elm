@@ -30,14 +30,14 @@ initModel flags =
             , isConnected = isConnected
             , view =
                 if isConnected then
-                    StatusView
+                    StatusListView
                 else
                     SetupView
             , errorMessage = Nothing
             , status = initStatus
             }
     in
-        ( model, StatusMsg QueryStatusCmd |> Task.succeed |> Task.perform identity )
+        ( model, ListViewStatusMsg QueryListViewStatusCmd |> Task.succeed |> Task.perform identity )
 
 
 initStatus : Status
@@ -54,4 +54,4 @@ initStatus =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every (3 * second) (\_ -> StatusMsg QueryStatusCmd)
+    Time.every (3 * second) (\_ -> ListViewStatusMsg QueryListViewStatusCmd)

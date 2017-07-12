@@ -1,4 +1,4 @@
-module Processors.StatusProcessor exposing (..)
+module Processors.StatusListViewProcessor exposing (..)
 
 import Common.HttpHelpers exposing (..)
 import Date exposing (Date)
@@ -30,10 +30,10 @@ loadRecords model =
             }
 
 
-process : Model -> StatusCmd -> ( Model, Cmd Msg )
+process : Model -> ListViewStatusCmd -> ( Model, Cmd Msg )
 process model cmd =
     case cmd of
-        QueryStatusCmd ->
+        QueryListViewStatusCmd ->
             let
                 task =
                     map2 (\now ps -> ( now, ps )) Date.now (Http.toTask <| loadRecords model)
@@ -41,20 +41,20 @@ process model cmd =
                 if not model.isConnected then
                     ( model, Cmd.none )
                 else
-                    ( { model | errorMessage = Nothing, view = StatusView }
-                    , Task.attempt (\x -> StatusMsg (QueryStatusCompletedCmd x)) task
+                    ( { model | errorMessage = Nothing, view = StatusListView }
+                    , Task.attempt (\x -> ListViewStatusMsg (QueryListViewStatusCompletedCmd x)) task
                     )
 
-        QueryStatusCompletedCmd (Err err) ->
+        QueryListViewStatusCompletedCmd (Err err) ->
             ( { model | errorMessage = Just (showHttpError err) }, Cmd.none )
 
-        QueryStatusCompletedCmd (Ok ( now, records )) ->
+        QueryListViewStatusCompletedCmd (Ok ( now, records )) ->
             let
                 status = model.status
             in
                 ( { model | status = { status | records = records, lastUpdated = Just now } }, Cmd.none )
 
-        InputFilterCmd path resultCode ->
+        InputListViewFilterCmd path resultCode ->
             let
                 status =
                     model.status

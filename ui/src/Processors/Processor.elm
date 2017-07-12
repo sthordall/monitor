@@ -2,7 +2,7 @@ module Processors.Processor exposing (..)
 
 import Model exposing (..)
 import Msg exposing (..)
-import Processors.StatusProcessor as StatusProc
+import Processors.StatusListViewProcessor as StatusListViewProc
 import Processors.SetupProcessor as SetupProc
 
 
@@ -12,5 +12,5 @@ processor msg model =
         SetupMsg cmd ->
             SetupProc.process model cmd
 
-        StatusMsg cmd ->
-            StatusProc.process model cmd
+        ListViewStatusMsg cmd ->
+            StatusListViewProc.process model cmd
