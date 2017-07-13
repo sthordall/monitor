@@ -6,6 +6,7 @@ import Http exposing (..)
 import Model exposing (..)
 import Msg exposing (..)
 import Task exposing (map2)
+import Window
 
 
 loadRecords : Model -> Http.Request (List Record)
@@ -50,9 +51,12 @@ process model cmd =
 
         QueryDashboardStatusCompletedCmd (Ok ( now, records )) ->
             let
-                status = model.status
+                status =
+                    model.status
             in
-                ( { model | status = { status | records = records, lastUpdated = Just now } }, Cmd.none )
+                ( { model | status = { status | records = records, lastUpdated = Just now } }
+                , Task.perform (\x -> DashboardStatusMsg (WindowResizesCmd x)) Window.size
+                )
 
         InputDashboardFilterCmd path resultCode ->
             let
@@ -63,3 +67,6 @@ process model cmd =
                     model.status.filter
             in
                 ( { model | status = { status | filter = { filter | path = path, resultCode = resultCode } } }, Cmd.none )
+
+        WindowResizesCmd size ->
+            ( { model | windowSize = size }, Cmd.none )

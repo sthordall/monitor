@@ -4,6 +4,7 @@ import Date exposing (Date)
 import Http
 import Model exposing (..)
 import Time exposing (Time)
+import Window exposing (Size)
 
 
 type Msg
@@ -30,6 +31,7 @@ type DashboardStatusCmd
     = QueryDashboardStatusCmd
     | QueryDashboardStatusCompletedCmd (Result Http.Error ( Date, List Record ))
     | InputDashboardFilterCmd String String
+    | WindowResizesCmd Size
 
 
 type ListViewStatusCmd

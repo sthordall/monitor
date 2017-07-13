@@ -1,7 +1,8 @@
 module Views.StatusDashboard exposing (..)
 
 import Date
-import Html exposing (Html)
+import Debug exposing (log)
+import Html exposing (Html, div, text)
 import Maybe exposing (withDefault)
 import Model exposing (..)
 import Msg exposing (..)
@@ -10,235 +11,70 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 
--- errorDetailsIfAny : Model -> Html Msg
--- errorDetailsIfAny model =
---     case model.errorMessage of
---         Just err ->
---             div [ style [ ( "color", "red" ), ( "font-family", "'Fira Mono', monospace" ) ] ]
---                 [ text ("Failed to load status: " ++ err)
---                 ]
---
---         Nothing ->
---             div [] []
+recordBox : ( Float, Float ) -> ( ( Int, Int ), Record ) -> Svg Msg
+recordBox ( iw, ih ) ( ( j, i ), record ) =
+    let
+        margin =
+            1
+
+        ix =
+            (toFloat i) * iw
+
+        iy =
+            (toFloat j) * ih
+    in
+        rect
+            [ x (toString (ix + margin))
+            , y (toString (iy + margin))
+            , width (toString (iw - margin * 2))
+            , height (toString (ih - margin * 2))
+            , fill "#0B79CE"
+            ]
+            []
 
 
--- config : Model -> Html Msg
--- config model =
---     table [ style [ ( "position", "fixed" ), ( "bottom", "0" ), ( "font-family", "'Fira Mono', monospace" ), ( "font-size", "1em" ), ( "margin", "0em 0em 1em -2em" ) ] ]
---         [ tr []
---             [ td [ style [ ( "padding", "3px 5px 3px 10px" ), ( "border-radius", "5px" ), ( "color", "white" ), ( "background-color", "#333" ), ( "font-weight", "bold" ) ] ] [ text "Server:" ]
---             , td [ style [ ( "padding", "3px 10px 3px 10px" ), ( "border-radius", "5px" ), ( "color", "rgb(223, 236, 23)" ), ( "background-color", "#333" ) ] ] [ text model.config.server ]
---             ]
---         ]
+recordsTable : ( Int, Int, Int, Int ) -> List Record -> List (Svg Msg)
+recordsTable ( tx, ty, tw, th ) records =
+    let
+        count =
+            records |> List.length
 
+        proportion =
+            (toFloat th) / (toFloat tw)
 
--- status : Model -> Html Msg
--- status model =
---     let
---         sortMode =
---             model.status.sortBy
---
---         filter =
---             model.status.filter
---
---         rs =
---             model.status.records
---
---         okStyle =
---             style [ ( "width", "100px" ), ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "green" ), ( "text-align", "center" ) ]
---
---         warningStyle =
---             style [ ( "width", "100px" ), ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "orange" ), ( "text-align", "center" ), ( "font-weight", "bold" ) ]
---
---         errorStyle =
---             style [ ( "width", "100px" ), ( "padding-right", "35px" ), ( "padding-bottom", "3px" ), ( "color", "#a94442" ), ( "text-align", "center" ), ( "font-weight", "bold" ) ]
---
---         rcStyle resultCode =
---             case resultCode of
---                 "OK" ->
---                     okStyle
---
---                 "Warning" ->
---                     warningStyle
---
---                 _ ->
---                     errorStyle
---
---         headerCellStyle =
---             style
---                 [ ( "padding-right", "35px" )
---                 , ( "padding-top", "10px" )
---                 , ( "padding-bottom", "10px" )
---                 , ( "text-align", "center" )
---                 , ( "font-size", "1.2em" )
---                 ]
---
---         cell120pxLStyle =
---             style
---                 [ ( "padding-right", "35px" )
---                 , ( "padding-bottom", "3px" )
---                 , ( "text-align", "left" )
---                 , ( "width", "120px" )
---                 ]
---
---         cellLStyle =
---             style
---                 [ ( "padding-right", "35px" )
---                 , ( "padding-bottom", "3px" )
---                 , ( "text-align", "left" )
---                 ]
---
---         cellFillLStyle =
---             style
---                 [ ( "padding-right", "35px" )
---                 , ( "padding-bottom", "3px" )
---                 , ( "text-align", "left" )
---                 , ( "width", "80%" )
---                 ]
---
---         dateTimeStyle =
---             style
---                 [ ( "padding-bottom", "1.3em" )
---                 , ( "text-align", "left" )
---                 , ( "font-family", "sans-serif" )
---                 , ( "color", "#286090" )
---                 ]
---
---         filterStyle =
---             style
---                 [ ( "font-family", "'Fira Mono', monospace" )
---                 , ( "margin-bottom", "1.2em" )
---                 , ( "text-align", "center" )
---                 , ( "border-style", "outset" )
---                 , ( "border-width", "0px 0px 1px 0px" )
---                 , ( "border-color", "#e8e8e8" )
---                 , ( "color", "#d9534f" )
---                 ]
---
---         mkRow : Record -> List (Html Msg)
---         mkRow entry =
---             [ tr []
---                 [ td [ rcStyle entry.result.resultCode ] [ text entry.result.resultCode ]
---                 , td [ cellFillLStyle, colspan 2 ] [ text entry.path ]
---                 , td [] []
---                 ]
---             ]
---                 ++ (if entry.result.resultCode /= "OK" then
---                         [ tr []
---                             [ td [ colspan 3 ] [ pre [ style [ ( "width", "90%" ) ] ] [ text entry.result.output ] ]
---                             , td [] []
---                             , td [] []
---                             ]
---                         ]
---                     else
---                         []
---                    )
---
---         resultCodeWeight : String -> Int
---         resultCodeWeight resultCode =
---             case resultCode of
---                 "OK" -> 2
---                 "Warning" -> 1
---                 _ -> 0
---
---         orderedRecords =
---             case sortMode of
---                 ByPath ->
---                     rs |> List.sortBy .path
---
---                 BySeverity ->
---                     rs |> List.sortBy (\r -> resultCodeWeight r.result.resultCode)
---
---         matchesFilter : Record -> Bool
---         matchesFilter r =
---             let
---                 reduce : Char -> String -> String
---                 reduce ch line =
---                     case ch of
---                         '*' ->
---                             ".+" ++ line
---
---                         _ ->
---                             String.fromChar ch ++ line
---
---                 prepRegex : String -> String
---                 prepRegex line =
---                     line |> R.escape |> String.split "\\*" |> String.join "*" |> String.foldr reduce ""
---
---                 path =
---                     filter.path |> prepRegex
---
---                 resultCode =
---                     filter.resultCode |> prepRegex
---
---                 matchesPath =
---                     r.path |> R.contains (R.regex path |> R.caseInsensitive)
---
---                 matchesResultCode =
---                     r.result.resultCode |> R.contains (R.regex resultCode |> R.caseInsensitive)
---             in
---                 matchesPath && matchesResultCode
---
---         filterRecords =
---             orderedRecords |> List.filter matchesFilter
---
---         padWithN : Int -> a -> String
---         padWithN n =
---             String.padLeft n '0' << toString
---
---         lastUpdated =
---             case model.status.lastUpdated of
---                 Nothing ->
---                     ""
---
---                 Just x ->
---                     padWithN 2 (Date.hour x)
---                         ++ ":"
---                         ++ padWithN 2 (Date.minute x)
---                         ++ ":"
---                         ++ padWithN 2 (Date.second x)
---     in
---         table [ style [ ( "width", "100%" ), ( "font-family", "'Fira Mono', monospace" ), ( "font-size", "1em" ), ( "margin-bottom", "10px" ), ( "margin-top", "20px" ) ] ]
---             ([ tr []
---                 [ td [ cell120pxLStyle ]
---                     [ input
---                         [ id "result-code"
---                         , class "form-control"
---                         , onInput (\resultCode -> DashboardStatusMsg (InputDashboardFilterCmd model.status.filter.path resultCode))
---                         , spellcheck False
---                         , filterStyle
---                         ]
---                         []
---                     ]
---                 , td [ cellLStyle ]
---                     [ input
---                         [ id "path"
---                         , class "form-control"
---                         , onInput (\path -> DashboardStatusMsg (InputDashboardFilterCmd path model.status.filter.resultCode))
---                         , spellcheck False
---                         , filterStyle
---                         ]
---                         []
---                     ]
---                 , td [ dateTimeStyle ] [ text lastUpdated ]
---                 ]
---              ]
---                 ++ (filterRecords |> List.map mkRow |> List.concat)
---             )
+        m =
+            round (sqrt ((toFloat count) * proportion))
+
+        n =
+            ceiling ((toFloat count) / (toFloat m))
+
+        indices =
+            List.range 0 (count - 1)
+                |> List.map (\i -> ( floor ((toFloat i) / (toFloat n)), i - n * floor ((toFloat i) / (toFloat n)) ))
+
+        iw =
+            (toFloat tw) / (toFloat n)
+
+        ih =
+            (toFloat th) / (toFloat m)
+    in
+        records |> List.map2 (,) indices |> List.map (recordBox ( iw, ih ))
 
 
 view : Model -> Html Msg
 view model =
-  let
-    angle = 45
+    let
+        size =
+            model.windowSize
 
-    handX =
-      toString (50 + 40 * cos angle)
+        strWidth =
+            toString size.width
 
-    handY =
-      toString (50 + 40 * sin angle)
-  in
-    svg [ viewBox "0 0 100 100", width "300px" ]
-      [ circle [ cx "50", cy "50", r "45", fill "#0B79CE" ] []
-      , line [ x1 "50", y1 "50", x2 handX, y2 handY, stroke "#023963" ] []
-      ]
+        strHeight =
+            toString size.height
+
+        strViewBoxSize =
+            "0 0 " ++ strWidth ++ " " ++ strHeight
+    in
+        svg [ viewBox strViewBoxSize, width "100%", height "90%" ]
+            (model.status.records |> recordsTable ( 0, 0, size.width, size.height ))

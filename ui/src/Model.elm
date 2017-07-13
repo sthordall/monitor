@@ -3,6 +3,7 @@ module Model exposing (..)
 import Date exposing (Date)
 import Json.Decode exposing (string, list, Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
+import Window exposing (Size)
 
 
 type alias Flags =
@@ -22,6 +23,7 @@ type alias Model =
     , view : View
     , errorMessage : Maybe String
     , status : Status
+    , windowSize : Size
     }
 
 

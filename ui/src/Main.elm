@@ -7,6 +7,7 @@ import Views.View exposing (startView)
 import Html exposing (programWithFlags)
 import Task
 import Time exposing (Time, second)
+import Window
 
 
 main : Program Flags Model Msg
@@ -35,6 +36,7 @@ initModel flags =
                     SetupView
             , errorMessage = Nothing
             , status = initStatus
+            , windowSize = Window.Size 800 600
             }
     in
         ( model, ListViewStatusMsg QueryListViewStatusCmd |> Task.succeed |> Task.perform identity )
@@ -52,6 +54,30 @@ initStatus =
     }
 
 
+queryListViewSubscription : Sub Msg
+queryListViewSubscription =
+    Time.every (5 * second) (\_ -> ListViewStatusMsg QueryListViewStatusCmd)
+
+
+queryDashboardSubscription : Sub Msg
+queryDashboardSubscription =
+    Time.every (5 * second) (\_ -> DashboardStatusMsg QueryDashboardStatusCmd)
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every (3 * second) (\_ -> ListViewStatusMsg QueryListViewStatusCmd)
+    Sub.batch
+        [ Time.every (5 * second)
+            (\_ ->
+                case model.view of
+                    StatusListView ->
+                        ListViewStatusMsg QueryListViewStatusCmd
+
+                    StatusDashboard ->
+                        DashboardStatusMsg QueryDashboardStatusCmd
+
+                    _ ->
+                        DashboardStatusMsg QueryDashboardStatusCmd
+            )
+        , Window.resizes (\size -> DashboardStatusMsg (WindowResizesCmd size))
+        ]
