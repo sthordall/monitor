@@ -54,16 +54,6 @@ initStatus =
     }
 
 
-queryListViewSubscription : Sub Msg
-queryListViewSubscription =
-    Time.every (5 * second) (\_ -> ListViewStatusMsg QueryListViewStatusCmd)
-
-
-queryDashboardSubscription : Sub Msg
-queryDashboardSubscription =
-    Time.every (5 * second) (\_ -> DashboardStatusMsg QueryDashboardStatusCmd)
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch

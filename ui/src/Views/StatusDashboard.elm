@@ -1,7 +1,6 @@
 module Views.StatusDashboard exposing (..)
 
 import Date
-import Debug exposing (log)
 import Html exposing (Html, div, text)
 import Maybe exposing (withDefault)
 import Model exposing (..)
