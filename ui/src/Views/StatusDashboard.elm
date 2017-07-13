@@ -15,22 +15,84 @@ recordBox : ( Float, Float ) -> ( ( Int, Int ), Record ) -> Svg Msg
 recordBox ( iw, ih ) ( ( j, i ), record ) =
     let
         margin =
-            1
+            2
 
         ix =
             (toFloat i) * iw
 
         iy =
             (toFloat j) * ih
+
+        fillColor =
+            case record.result.resultCode of
+                "OK" ->
+                    "#5cb85c"
+
+                "Warning" ->
+                    "#f0ad4e"
+
+                _ ->
+                    "#d9534f"
+
+        pathParts =
+            record.path
+                |> String.split "/"
+
+        label =
+            pathParts
+                |> List.drop 1
+                |> List.head
+                |> withDefault ""
+
+        checkName =
+            pathParts
+                |> List.reverse
+                |> List.head
+                |> withDefault ""
+                |> String.split "."
+                |> List.head
+                |> withDefault ""
+                |> String.split "-"
+                |> List.drop 1
     in
-        rect
-            [ x (toString (ix + margin))
-            , y (toString (iy + margin))
-            , width (toString (iw - margin * 2))
-            , height (toString (ih - margin * 2))
-            , fill "#0B79CE"
+        g []
+            [ rect
+                [ x (toString (ix + margin))
+                , y (toString (iy + margin))
+                , width (toString (iw - margin * 2))
+                , height (toString (ih - margin * 2))
+                , fill fillColor
+                ]
+                []
+            , text_
+                [ x (toString (ix + iw / 2))
+                , y (toString (iy + ih / 3))
+                , textAnchor "middle"
+                , fontSize (toString (iw / 6))
+                , fill "aliceblue"
+                , textLength (toString (iw * 2 / 3))
+                ]
+                [ Svg.text label ]
+            , text_
+                [ x (toString (ix + iw / 2))
+                , y (toString (iy + 4 * ih / 9))
+                , textAnchor "middle"
+                , fontSize (toString (iw / 12))
+                , fill "aliceblue"
+                ]
+                (checkName
+                    |> List.map
+                        (\name ->
+                            tspan
+                                ([ x (toString (ix + iw / 2))
+                                 , dy "1.2em"
+                                 , fontFamily "Monospace"
+                                 ]
+                                )
+                                [ Svg.text name ]
+                        )
+                )
             ]
-            []
 
 
 recordsTable : ( Int, Int, Int, Int ) -> List Record -> List (Svg Msg)
