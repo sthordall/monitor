@@ -230,7 +230,7 @@ status model =
 view : Model -> Html Msg
 view model =
     div []
-        [ h2 [] [ text "Status" ]
+        [ h2 [] [ text "List View" ]
         , errorDetailsIfAny model
         , status model
         , div [ style [ ( "padding-bottom", "3em" ) ] ] []
