@@ -37,6 +37,6 @@ in
       Volumes = {
         "/checks" = {};
       };
-      Cmd = [ "${main}/bin/monitor" "-m" "3000" "-p" "./checks" ];
+      Cmd = [ "${main}/bin/monitor" "-m" "-p" "./checks" ];
     };
   }
