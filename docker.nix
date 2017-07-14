@@ -6,40 +6,37 @@ let
     haskell.lib.dontCheck
       (haskell.lib.justStaticExecutables (import ./default.nix {}));
   checks = import ./checks.nix { inherit stdenv; };
+  static = import ./static.nix { inherit stdenv; };
 in
   dockerTools.buildImage {
     name = "monitor";
     tag = "latest";
     contents = [
-      main
-      checks
       bash
+      checks
       coreutils
-      jq
       curl
+      docker
+      gawk
       gnugrep
       gnused
-      gawk
-      docker
+      jq
+      main
+      static
     ];
-    runAsRoot = ''
-      #!${stdenv.shell}
-      ${dockerTools.shadowSetup}
-      mkdir -p /checks
-    '';
     config = {
       Env = [
         "DOCKER_HOST="
         "RABBITMQ_ADDRESS="
         "RABBITMQ_CREDS="
       ];
-      WorkingDir = "/checks";
+      WorkingDir = "/app";
       ExposedPorts = {
         "3000/tcp" = {};
       };
       Volumes = {
         "/checks" = {};
       };
-      Cmd = [ "${main}/bin/monitor" ];
+      Cmd = [ "${main}/bin/monitor" "-m" "3000" "-p" "./checks" ];
     };
   }

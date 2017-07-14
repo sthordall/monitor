@@ -5,9 +5,9 @@ stdenv.mkDerivation {
   src = ./checks;
   phases = [ "unpackPhase" "installPhase" ];
   installPhase = ''
-    mkdir -p $out/checks
-    cp -r -v . $out/checks
-    patchShebangs $out/checks
-    chmod +x $out/checks/**/*.sh
+    mkdir -p $out/app/checks
+    cp -r -v . $out/app/checks
+    patchShebangs $out/app/checks
+    chmod +x $out/app/checks/**/*.sh
   '';
 }
