@@ -6,7 +6,7 @@ let
 
   f = { mkDerivation, base, stdenv, filepath, filemanip
       , optparse-applicative, process, timeit, aeson
-      , text, scotty, wai-cors, wai-extra, time
+      , text, scotty, wai-cors, wai-extra, wai-middleware-static, time
       , ghc-mod, hlint, hoogle, hindent, stylish-haskell
       }:
       mkDerivation {
@@ -15,8 +15,28 @@ let
         src = ./.;
         isLibrary = false;
         isExecutable = true;
-        executableHaskellDepends = [ base optparse-applicative filepath filemanip process timeit aeson text scotty wai-cors wai-extra time ];
-        buildDepends = [ ghc-mod hlint hoogle hindent stylish-haskell ];
+        executableHaskellDepends = [
+          base
+          aeson
+          filemanip
+          filepath
+          optparse-applicative
+          process
+          scotty
+          text
+          time
+          timeit
+          wai-cors
+          wai-extra
+          wai-middleware-static
+        ];
+        buildDepends = [
+          ghc-mod
+          hindent
+          hlint
+          hoogle
+          stylish-haskell
+        ];
         homepage = "https://github.com/kuznero/scripts/monitoring/monitor#README";
         description = "Monitoring aggregator";
         license = stdenv.lib.licenses.mit;

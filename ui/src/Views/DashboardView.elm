@@ -233,7 +233,7 @@ config model =
                 [ ( "padding", "3px 5px 3px 10px" )
                 , ( "border-radius", "5px" )
                 , ( "color", "white" )
-                , ( "background-color", "#333" )
+                , ( "background-color", "rgba(0,0,0,.5)" )
                 , ( "font-weight", "bold" )
                 ]
 
@@ -242,7 +242,7 @@ config model =
                 [ ( "padding", "3px 10px 3px 10px" )
                 , ( "border-radius", "5px" )
                 , ( "color", "rgb(223, 236, 23)" )
-                , ( "background-color", "#333" )
+                , ( "background-color", "rgba(0,0,0,.5)" )
                 ]
     in
         table [ tableStyle ]

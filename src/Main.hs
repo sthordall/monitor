@@ -14,6 +14,7 @@ import Engine
 import Models
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Middleware.RequestLogger
+import Network.Wai.Middleware.Static
 import Opts
 import System.Exit (exitWith)
 import System.IO (hFlush, stdout)
@@ -53,12 +54,16 @@ main = do
     scotty optsMonitorPort $ do
       middleware logStdoutDev
       middleware simpleCors
+      middleware $ staticPolicy (noDots >-> addBase "static")
       get "/status" $ do
         (reports, _) <- liftIO $ readMVar var
         json reports
       get "/health" $ do
         (_, lastUpdated) <- liftIO $ readMVar var
         text $ pack $ show lastUpdated
+      get "/ui" $ do
+        setHeader "Content-Type" "text/html"
+        file "static/index.html"
   unless optsMonitor $ do
     reports <- detectScripts optsPath >>= executeScripts
     forM_ reports $ putStrLn . formatReport
