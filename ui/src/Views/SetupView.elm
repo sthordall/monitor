@@ -51,7 +51,7 @@ view model =
             [ h2 [] [ text "Server details" ]
             , Html.form
                 [ class "form"
-                , onSubmit (SetupMsg (ConnectCmd ListView))
+                , onSubmit (SetupMsg ConnectCmd)
                 ]
                 [ serverExamples
                     [ ( "Local server", "http://127.0.0.1:3000/" )
@@ -59,11 +59,8 @@ view model =
                 , addressField model.config
                 ]
             , div [ class "form-actions", style [ ( "float", "left" ) ] ]
-                [ button [ btnStyle, class "btn btn-primary", onClick (SetupMsg (ConnectCmd ListView)) ]
-                    [ text "List view ..."
-                    ]
-                , button [ btnStyle, class "btn btn-primary", onClick (SetupMsg (ConnectCmd Dashboard)) ]
-                    [ text "Dashboard ..."
+                [ button [ btnStyle, class "btn btn-primary", onClick (SetupMsg ConnectCmd) ]
+                    [ text "Connect ..."
                     ]
                 ]
             , div [ class "error-message", style [ ( "float", "left" ), ( "margin", "5px 0 0 10px" ) ] ] [ text (withDefault "" model.errorMessage) ]

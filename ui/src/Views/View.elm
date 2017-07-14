@@ -2,8 +2,7 @@ module Views.View exposing (..)
 
 import Model exposing (..)
 import Msg exposing (..)
-import Views.StatusListView as StatusListView
-import Views.StatusDashboard as StatusDashboard
+import Views.DashboardView as Dashboard
 import Views.SetupView as Setup
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,18 +11,14 @@ import Html.Attributes exposing (..)
 startView : Model -> Html Msg
 startView model =
     let
-        view =
+        ( container, view ) =
             case model.view of
                 SetupView ->
-                    Setup.view
+                    ( "container", Setup.view )
 
-                StatusListView ->
-                    StatusListView.view
-
-                StatusDashboard ->
-                    StatusDashboard.view
+                DashboardView ->
+                    ( "container-fluid", Dashboard.view )
     in
-        div [ class "container" ]
-            [ p [] []
-            , view model
+        div [ class container ]
+            [ view model
             ]

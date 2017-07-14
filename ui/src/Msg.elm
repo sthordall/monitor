@@ -9,32 +9,20 @@ import Window exposing (Size)
 
 type Msg
     = SetupMsg SetupCmd
-    | ListViewStatusMsg ListViewStatusCmd
-    | DashboardStatusMsg DashboardStatusCmd
+    | DashboardMsg DashboardCmd
 
 
 type ErrorMessage
     = String
 
 
-type ViewMode
-    = ListView
-    | Dashboard
-
-
 type SetupCmd
     = InputAddressCmd String
-    | ConnectCmd ViewMode
+    | ConnectCmd
 
 
-type DashboardStatusCmd
-    = QueryDashboardStatusCmd
-    | QueryDashboardStatusCompletedCmd (Result Http.Error ( Date, List Record ))
-    | InputDashboardFilterCmd String String
+type DashboardCmd
+    = QueryDataCmd
+    | QueryDataCompletedCmd (Result Http.Error ( Date, List Record ))
+    | InputFilterCmd String String
     | WindowResizesCmd Size
-
-
-type ListViewStatusCmd
-    = QueryListViewStatusCmd
-    | QueryListViewStatusCompletedCmd (Result Http.Error ( Date, List Record ))
-    | InputListViewFilterCmd String String

@@ -13,8 +13,7 @@ type alias Flags =
 
 type View
     = SetupView
-    | StatusListView
-    | StatusDashboard
+    | DashboardView
 
 
 type alias Model =
@@ -22,8 +21,8 @@ type alias Model =
     , isConnected : Bool
     , view : View
     , errorMessage : Maybe String
-    , status : Status
     , windowSize : Size
+    , data : Data
     }
 
 
@@ -43,7 +42,7 @@ type alias RecordsFilter =
     }
 
 
-type alias Status =
+type alias Data =
     { records : List Record
     , lastUpdated : Maybe Date
     , sortBy : RecordsSortMode
@@ -80,3 +79,9 @@ recordDecoder =
 recordListDecoder : Decoder (List Record)
 recordListDecoder =
     list recordDecoder
+
+
+type alias ViewSettings =
+    { hideFilters : Bool
+    , hideNonFailingRecords : Bool
+    }

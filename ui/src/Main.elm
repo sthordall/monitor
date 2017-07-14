@@ -31,19 +31,19 @@ initModel flags =
             , isConnected = isConnected
             , view =
                 if isConnected then
-                    StatusListView
+                    DashboardView
                 else
                     SetupView
             , errorMessage = Nothing
-            , status = initStatus
+            , data = initData
             , windowSize = Window.Size 800 600
             }
     in
-        ( model, ListViewStatusMsg QueryListViewStatusCmd |> Task.succeed |> Task.perform identity )
+        ( model, DashboardMsg QueryDataCmd |> Task.succeed |> Task.perform identity )
 
 
-initStatus : Status
-initStatus =
+initData : Data
+initData =
     { records = []
     , lastUpdated = Nothing
     , sortBy = BySeverity
@@ -57,17 +57,6 @@ initStatus =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every (5 * second)
-            (\_ ->
-                case model.view of
-                    StatusListView ->
-                        ListViewStatusMsg QueryListViewStatusCmd
-
-                    StatusDashboard ->
-                        DashboardStatusMsg QueryDashboardStatusCmd
-
-                    _ ->
-                        DashboardStatusMsg QueryDashboardStatusCmd
-            )
-        , Window.resizes (\size -> DashboardStatusMsg (WindowResizesCmd size))
+        [ Time.every (5 * second) (\_ -> DashboardMsg QueryDataCmd)
+        , Window.resizes (\size -> DashboardMsg (WindowResizesCmd size))
         ]
