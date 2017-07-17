@@ -4,7 +4,7 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, base, filemanip, filepath
+  f = { mkDerivation, aeson, base, bytestring, filemanip, filepath
       , optparse-applicative, process, scotty, stdenv, text, time, timeit
       , wai-cors, wai-extra, wai-middleware-static
       }:
@@ -17,6 +17,7 @@ let
         executableHaskellDepends = [
           base
           aeson
+          bytestring
           filemanip
           filepath
           optparse-applicative

@@ -11,6 +11,7 @@ import Data.Maybe (fromMaybe)
 import Data.Text.Lazy (pack)
 import Data.Time (UTCTime, getCurrentTime)
 import Engine
+import Icinga
 import Models
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Middleware.RequestLogger
