@@ -4,9 +4,25 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, base, bytestring, filemanip, filepath
-      , optparse-applicative, process, scotty, stdenv, text, time, timeit
-      , wai-cors, wai-extra, wai-middleware-static
+  f = { mkDerivation
+      , aeson
+      , amqp
+      , base
+      , bytestring
+      , containers
+      , filemanip
+      , filepath
+      , network
+      , optparse-applicative
+      , process
+      , scotty
+      , stdenv
+      , text
+      , time
+      , timeit
+      , wai-cors
+      , wai-extra
+      , wai-middleware-static
       }:
       mkDerivation {
         pname = "monitor";
@@ -15,11 +31,14 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base
           aeson
+          amqp
+          base
           bytestring
+          containers
           filemanip
           filepath
+          network
           optparse-applicative
           process
           scotty

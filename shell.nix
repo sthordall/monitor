@@ -4,9 +4,25 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, stdenv, filepath, filemanip
-      , optparse-applicative, process, timeit, aeson, bytestring
-      , text, scotty, wai-cors, wai-extra, wai-middleware-static, time
+  f = { mkDerivation
+      , aeson
+      , amqp
+      , base
+      , bytestring
+      , containers
+      , filemanip
+      , filepath
+      , network
+      , optparse-applicative
+      , process
+      , scotty
+      , stdenv
+      , text
+      , time
+      , timeit
+      , wai-cors
+      , wai-extra
+      , wai-middleware-static
       , ghc-mod, hlint, hoogle, hindent, stylish-haskell
       }:
       mkDerivation {
@@ -16,11 +32,14 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base
           aeson
+          amqp
+          base
           bytestring
+          containers
           filemanip
           filepath
+          network
           optparse-applicative
           process
           scotty
