@@ -1,20 +1,13 @@
-module Opts
-  ( Opts(..)
-  , parseOpts
+module EngineOptionsParser
+  ( parseOptions
   ) where
 
 import Data.Semigroup ((<>))
+import Monitor
 import Options.Applicative
 
-data Opts = Opts
-  { optsMonitor :: Bool
-  , optsMonitorPort :: Int
-  , optsDelayBetweenChecks :: Int
-  , optsPath :: FilePath
-  }
-
-optsParser :: Parser Opts
-optsParser = Opts
+optsParser :: Parser EngineOptions
+optsParser = EngineOptions
   <$> switch
       (  long "monitor"
       <> short 'm'
@@ -37,10 +30,10 @@ optsParser = Opts
       <> metavar "PATH"
       <> help "Path where script to be located" )
 
-optsInfo :: ParserInfo Opts
+optsInfo :: ParserInfo EngineOptions
 optsInfo = info (optsParser <**> helper)
   (  fullDesc
   <> progDesc "Runs a set of scripts and aggregates results" )
 
-parseOpts :: IO Opts
-parseOpts = execParser optsInfo
+parseOptions :: IO EngineOptions
+parseOptions = execParser optsInfo

@@ -3,52 +3,23 @@
 
 module Main where
 
-import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.MVar
-import Control.Monad (forM_, unless, void, when)
+import Control.Monad (forM_, unless, when)
 import Control.Monad.IO.Class (liftIO)
 import Data.Text.Lazy (pack)
-import Data.Time (UTCTime, getCurrentTime)
 import Monitor
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
-import Opts
+import EngineOptionsParser
 import System.Exit (exitWith)
-import System.IO (hFlush, stdout)
-import System.TimeIt (timeItT)
 import Web.Scotty
-
-type LastUpdated = UTCTime
-
-type State = ([Report], LastUpdated)
-
-initState :: IO State
-initState = do
-  now <- getCurrentTime
-  return ([], now)
-
-process :: Opts -> MVar State -> IO ()
-process opts@Opts {..} var = do
-  putStr "Checking ... "
-  hFlush stdout
-  (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts)
-  now <- getCurrentTime
-  void $ swapMVar var (reports, now)
-  putStrLn $ "done, took " ++ show duration ++ "sec"
-  threadDelay $ optsDelayBetweenChecks * 10000000
-  process opts var
-
-startEngine :: Opts -> MVar State -> IO ()
-startEngine opts var = void $ forkIO $ process opts var
 
 main :: IO ()
 main = do
-  opts@Opts {..} <- parseOpts
+  opts@EngineOptions {..} <- parseOptions
   when optsMonitor $ do
-    state <- initState
-    var <- newMVar state
-    startEngine opts var
+    var <- startEngine opts
     scotty optsMonitorPort $ do
       middleware logStdoutDev
       middleware simpleCors
