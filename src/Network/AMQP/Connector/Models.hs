@@ -2,6 +2,8 @@
 
 module Network.AMQP.Connector.Models
   ( ConnectionPoint(..)
+  , VirtualHost
+  , Credentials(..)
   , ConnectionOpts(..)
   , defOpts
   , ConnectionInfo(..)
@@ -12,16 +14,15 @@ module Network.AMQP.Connector.Models
   ) where
 
 import Control.Concurrent.MVar (MVar)
-import Data.Text (Text, unpack)
+import Data.Text (Text)
 import Network (PortNumber)
 import qualified Network.AMQP as A
+
+type VirtualHost = Text
 
 data ConnectionPoint = ConnectionPoint
   { pointHost :: String
   , pointPort :: Maybe PortNumber
-  , pointVirtualHost :: Text
-  , pointLogin :: Text
-  , pointPassword :: Text
   }
 
 instance Show ConnectionPoint where
@@ -30,7 +31,12 @@ instance Show ConnectionPoint where
           case pointPort of
             Nothing -> ""
             Just p -> ":" ++ show p
-    pointHost ++ port ++ " [" ++ unpack pointVirtualHost ++ "] as " ++ unpack pointLogin
+    pointHost ++ port
+
+data Credentials = Credentials
+  { credLogin :: Text
+  , credPassword :: Text
+  }
 
 data ConnectionOpts = ConnectionOpts
   { optsRecoveryInterval :: Int

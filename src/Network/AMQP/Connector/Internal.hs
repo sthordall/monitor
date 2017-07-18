@@ -20,9 +20,9 @@ import Network.AMQP.Connector.Models
 import Prelude hiding (log)
 import System.TimeIt (timeItT)
 
-startConnector :: ConnectionOpts -> [ConnectionPoint] -> IO Connector
-startConnector opts points = do
-  cons <- mapM (initConnection opts) points
+startConnector :: ConnectionOpts -> [ConnectionPoint] -> VirtualHost -> Credentials -> IO Connector
+startConnector opts points vhost creds = do
+  cons <- mapM (\p -> initConnection opts p vhost creds) points
   return $ Connector cons
 
 stopConnector :: Connector -> IO ()
@@ -51,11 +51,11 @@ log ConnectionInfo {..} line =
     Just logger -> logger $ "{ " ++ show infoPoint ++ " } " ++ line
     Nothing -> return ()
 
-initConnection :: ConnectionOpts -> ConnectionPoint -> IO ConnectionInfo
-initConnection opts@ConnectionOpts {..} point = do
+initConnection :: ConnectionOpts -> ConnectionPoint -> VirtualHost -> Credentials -> IO ConnectionInfo
+initConnection opts@ConnectionOpts {..} point vhost creds = do
   let mkInfo = ConnectionInfo point optsLogger
   info <- mkInfo <$> newEmptyMVar <*> newEmptyMVar <*> newEmptyMVar
-  void $ forkIO $ upConnection info opts point False
+  void $ forkIO $ upConnection info opts point vhost creds False
   return info
 
 releaseConnection :: ConnectionInfo -> IO ()
@@ -78,14 +78,14 @@ whenRunning ConnectionInfo {..} g f = do
     (Just _, Just notf) -> notf
     (Just _, _) -> return ()
 
-updateConnectionSpeed :: ConnectionInfo -> ConnectionOpts -> ConnectionPoint -> IO ()
-updateConnectionSpeed info@ConnectionInfo {..} ConnectionOpts {..} point = do
+updateConnectionSpeed :: ConnectionInfo -> ConnectionOpts -> ConnectionPoint -> VirtualHost -> Credentials -> IO ()
+updateConnectionSpeed info@ConnectionInfo {..} ConnectionOpts {..} point vhost creds = do
   (speed, t) <-
     modifyMVar
       infoConnection
       (\(c, p, s, t) -> return ((c, p, s, t + optsRetryInterval), (s, t + optsRetryInterval)))
   when (t >= optsSpeedRefreshInterval) $ do
-    (newSpeed, mcon) <- timeItT (openConnection point)
+    (newSpeed, mcon) <- timeItT (openConnection point vhost creds)
     case mcon of
       Just con -> do
         modifyMVar_ infoConnection (\(c, p, _, _) -> return (c, p, newSpeed, 0))
@@ -93,41 +93,41 @@ updateConnectionSpeed info@ConnectionInfo {..} ConnectionOpts {..} point = do
         log info $ "connection speed: " ++ show speed ++ " sec -> " ++ show newSpeed ++ " sec"
       _ -> return ()
 
-upConnection :: ConnectionInfo -> ConnectionOpts -> ConnectionPoint -> Bool -> IO ()
-upConnection info@ConnectionInfo {..} opts@ConnectionOpts {..} point False =
+upConnection :: ConnectionInfo -> ConnectionOpts -> ConnectionPoint -> VirtualHost -> Credentials -> Bool -> IO ()
+upConnection info@ConnectionInfo {..} opts@ConnectionOpts {..} point vhost creds False =
   whenRunning info (Just $ log info "stop connecting (closing)") $ do
     log info "connecting"
-    (t, mcon) <- timeItT (openConnection point)
+    (t, mcon) <- timeItT (openConnection point vhost creds)
     case mcon of
       Nothing -> do
         threadDelay optsRecoveryInterval
         log info $ "failed to connect in " ++ show t ++ " sec"
-        upConnection info opts point False
+        upConnection info opts point vhost creds False
       Just con -> do
         A.addConnectionClosedHandler con True (putMVar infoClosedFlag ())
         putMVar infoConnection (con, infoPoint, t, 0)
         log info $ "connected (" ++ show t ++ " sec)"
-        upConnection info opts point True
-upConnection info@ConnectionInfo {..} opts@ConnectionOpts {..} point True =
+        upConnection info opts point vhost creds True
+upConnection info@ConnectionInfo {..} opts@ConnectionOpts {..} point vhost creds True =
   whenRunning info Nothing $ do
     x <- tryReadMVar infoClosedFlag
     case x of
       Nothing -> do
         threadDelay optsRetryInterval
-        updateConnectionSpeed info opts point
-        upConnection info opts point True
+        updateConnectionSpeed info opts point vhost creds
+        upConnection info opts point vhost creds True
       Just _ -> do
         void $ takeMVar infoClosedFlag
         (con, _, _, _) <- takeMVar infoConnection
         catch (A.closeConnection con) (\(_ :: A.AMQPException) -> return ())
         log info "disconnected"
-        upConnection info opts point False
+        upConnection info opts point vhost creds False
 
-openConnection :: ConnectionPoint -> IO (Maybe A.Connection)
-openConnection ConnectionPoint {..} = do
+openConnection :: ConnectionPoint -> VirtualHost -> Credentials -> IO (Maybe A.Connection)
+openConnection ConnectionPoint {..} vhost Credentials {..} = do
   let port = fromMaybe defaultPort pointPort
   catch
-    (Just <$> A.openConnection' pointHost port pointVirtualHost pointLogin pointPassword)
+    (Just <$> A.openConnection' pointHost port vhost credLogin credPassword)
     (\(_ :: A.AMQPException) -> return Nothing)
   where
     defaultPort = snd $ head $ A.coServers A.defaultConnectionOpts

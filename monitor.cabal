@@ -54,6 +54,7 @@ executable monitor
                      , wai-middleware-static >= 0.8.1 && < 0.9
   hs-source-dirs:      src
   default-language:    Haskell2010
+  ghc-options:        -Wall
 
 source-repository head
   type:     git

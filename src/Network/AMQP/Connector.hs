@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Network.AMQP.Connector
@@ -8,6 +9,8 @@ module Network.AMQP.Connector
   , ConnectionOpts(..)
   , defOpts
   , ConnectionPoint(..)
+  , VirtualHost
+  , Credentials(..)
   , ConnectionSpeed
   , Connection
   , Connector
@@ -16,7 +19,7 @@ module Network.AMQP.Connector
 import Network.AMQP.Connector.Internal
 import Network.AMQP.Connector.Models
 
-start :: ConnectionOpts -> [ConnectionPoint] -> IO Connector
+start :: ConnectionOpts -> [ConnectionPoint] -> VirtualHost -> Credentials -> IO Connector
 start = startConnector
 
 stop :: Connector -> IO ()
