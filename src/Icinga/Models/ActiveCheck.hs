@@ -43,5 +43,8 @@ mkActiveCheck disp checkInt retryInt =
   , maxCheckAttempts = 1
   , checkInterval = checkInt
   , retryInterval = retryInt
-  , vars = Vars "2" "timeout"
+  , vars = Vars
+      { dummyState = "2"
+      , dummyText = "timeout"
+      }
   }

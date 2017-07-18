@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Engine
+module Monitor.Engine
   ( detectScripts
   , executeScripts
   , formatReport
@@ -12,7 +12,7 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.MVar
 import Control.Monad (void)
 import Data.List (elem)
-import Models
+import Monitor.Models
 import System.Exit (ExitCode(..))
 import System.FilePath.Find ((~~?), always, fileName, find)
 import System.Process (readProcessWithExitCode)

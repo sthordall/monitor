@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Models where
+module Monitor.Models where
 
 import Data.Aeson (FromJSON, ToJSON(..), genericToJSON)
 import GHC.Generics

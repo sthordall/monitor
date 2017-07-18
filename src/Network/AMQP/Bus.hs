@@ -1,12 +1,10 @@
 module Network.AMQP.Bus where
 
-import Control.Exception (catch)
-import qualified Network.AMQP as A
-import Network.AMQP.Bus.Internal
 import Network.AMQP.Bus.Models
+import Network.AMQP.Connector
 
 publish :: Connector -> Message -> IO Bool
-publish cntr msg = undefined
+publish = undefined
 
 -- {-# LANGUAGE ScopedTypeVariables #-}
 --

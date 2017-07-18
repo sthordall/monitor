@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Icinga.Models.Report
-  ( Report
+  ( Report(..)
   ) where
 
 import Data.Aeson (FromJSON, ToJSON(..), genericToJSON)

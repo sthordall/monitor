@@ -1,9 +1,10 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Network.AMQP.Connector.Models
-  ( ConnectionPoint(..)
+  ( ServerAddress(..)
   , VirtualHost
   , Credentials(..)
+  , ConnectorInfo(..)
   , ConnectionOpts(..)
   , defOpts
   , ConnectionInfo(..)
@@ -20,22 +21,28 @@ import qualified Network.AMQP as A
 
 type VirtualHost = Text
 
-data ConnectionPoint = ConnectionPoint
-  { pointHost :: String
-  , pointPort :: Maybe PortNumber
+data ServerAddress = ServerAddress
+  { serverHost :: String
+  , serverPort :: Maybe PortNumber
   }
 
-instance Show ConnectionPoint where
-  show ConnectionPoint {..} = do
+instance Show ServerAddress where
+  show ServerAddress {..} = do
     let port =
-          case pointPort of
+          case serverPort of
             Nothing -> ""
             Just p -> ":" ++ show p
-    pointHost ++ port
+    serverHost ++ port
 
 data Credentials = Credentials
   { credLogin :: Text
   , credPassword :: Text
+  }
+
+data ConnectorInfo = ConnectorInfo
+  { cntrAddresses :: [ServerAddress]
+  , cntrVirtualHost :: VirtualHost
+  , cntrCredentials :: Credentials
   }
 
 data ConnectionOpts = ConnectionOpts
@@ -62,9 +69,9 @@ type ConnectionSpeed = Double
 type LastMeasured = Int
 
 data ConnectionInfo = ConnectionInfo
-  { infoPoint :: ConnectionPoint
+  { infoPoint :: ServerAddress
   , infoLogger :: Maybe (String -> IO ())
-  , infoConnection :: MVar (A.Connection, ConnectionPoint, ConnectionSpeed, LastMeasured)
+  , infoConnection :: MVar (A.Connection, ServerAddress, ConnectionSpeed, LastMeasured)
   , infoClosedFlag :: MVar ()
   , infoShuttingDownFlag :: MVar ()
   }

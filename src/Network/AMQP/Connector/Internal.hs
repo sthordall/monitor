@@ -20,15 +20,15 @@ import Network.AMQP.Connector.Models
 import Prelude hiding (log)
 import System.TimeIt (timeItT)
 
-startConnector :: ConnectionOpts -> [ConnectionPoint] -> VirtualHost -> Credentials -> IO Connector
-startConnector opts points vhost creds = do
-  cons <- mapM (\p -> initConnection opts p vhost creds) points
+startConnector :: ConnectionOpts -> ConnectorInfo -> IO Connector
+startConnector opts ConnectorInfo {..} = do
+  cons <- mapM (\p -> initConnection opts p cntrVirtualHost cntrCredentials) cntrAddresses
   return $ Connector cons
 
 stopConnector :: Connector -> IO ()
 stopConnector Connector {..} = mapM_ releaseConnection availableConnections
 
-getConnection :: Connector -> IO (Maybe (Connection, ConnectionPoint, ConnectionSpeed))
+getConnection :: Connector -> IO (Maybe (Connection, ServerAddress, ConnectionSpeed))
 getConnection Connector {..} = do
   cons <- catMaybes <$> mapM (tryReadMVar . infoConnection) availableConnections
   let orderedConnections =
@@ -51,7 +51,7 @@ log ConnectionInfo {..} line =
     Just logger -> logger $ "{ " ++ show infoPoint ++ " } " ++ line
     Nothing -> return ()
 
-initConnection :: ConnectionOpts -> ConnectionPoint -> VirtualHost -> Credentials -> IO ConnectionInfo
+initConnection :: ConnectionOpts -> ServerAddress -> VirtualHost -> Credentials -> IO ConnectionInfo
 initConnection opts@ConnectionOpts {..} point vhost creds = do
   let mkInfo = ConnectionInfo point optsLogger
   info <- mkInfo <$> newEmptyMVar <*> newEmptyMVar <*> newEmptyMVar
@@ -78,7 +78,7 @@ whenRunning ConnectionInfo {..} g f = do
     (Just _, Just notf) -> notf
     (Just _, _) -> return ()
 
-updateConnectionSpeed :: ConnectionInfo -> ConnectionOpts -> ConnectionPoint -> VirtualHost -> Credentials -> IO ()
+updateConnectionSpeed :: ConnectionInfo -> ConnectionOpts -> ServerAddress -> VirtualHost -> Credentials -> IO ()
 updateConnectionSpeed info@ConnectionInfo {..} ConnectionOpts {..} point vhost creds = do
   (speed, t) <-
     modifyMVar
@@ -93,7 +93,7 @@ updateConnectionSpeed info@ConnectionInfo {..} ConnectionOpts {..} point vhost c
         log info $ "connection speed: " ++ show speed ++ " sec -> " ++ show newSpeed ++ " sec"
       _ -> return ()
 
-upConnection :: ConnectionInfo -> ConnectionOpts -> ConnectionPoint -> VirtualHost -> Credentials -> Bool -> IO ()
+upConnection :: ConnectionInfo -> ConnectionOpts -> ServerAddress -> VirtualHost -> Credentials -> Bool -> IO ()
 upConnection info@ConnectionInfo {..} opts@ConnectionOpts {..} point vhost creds False =
   whenRunning info (Just $ log info "stop connecting (closing)") $ do
     log info "connecting"
@@ -123,11 +123,11 @@ upConnection info@ConnectionInfo {..} opts@ConnectionOpts {..} point vhost creds
         log info "disconnected"
         upConnection info opts point vhost creds False
 
-openConnection :: ConnectionPoint -> VirtualHost -> Credentials -> IO (Maybe A.Connection)
-openConnection ConnectionPoint {..} vhost Credentials {..} = do
-  let port = fromMaybe defaultPort pointPort
+openConnection :: ServerAddress -> VirtualHost -> Credentials -> IO (Maybe A.Connection)
+openConnection ServerAddress {..} vhost Credentials {..} = do
+  let port = fromMaybe defaultPort serverPort
   catch
-    (Just <$> A.openConnection' pointHost port vhost credLogin credPassword)
+    (Just <$> A.openConnection' serverHost port vhost credLogin credPassword)
     (\(_ :: A.AMQPException) -> return Nothing)
   where
     defaultPort = snd $ head $ A.coServers A.defaultConnectionOpts

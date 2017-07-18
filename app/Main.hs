@@ -9,10 +9,7 @@ import Control.Monad (forM_, unless, void, when)
 import Control.Monad.IO.Class (liftIO)
 import Data.Text.Lazy (pack)
 import Data.Time (UTCTime, getCurrentTime)
-import Engine
--- import Icinga
-import Models
--- import qualified Network.AMQP.Connector as AC
+import Monitor
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static

@@ -8,9 +8,10 @@ module Network.AMQP.Connector
   , get_
   , ConnectionOpts(..)
   , defOpts
-  , ConnectionPoint(..)
+  , ServerAddress(..)
   , VirtualHost
   , Credentials(..)
+  , ConnectorInfo(..)
   , ConnectionSpeed
   , Connection
   , Connector
@@ -19,13 +20,13 @@ module Network.AMQP.Connector
 import Network.AMQP.Connector.Internal
 import Network.AMQP.Connector.Models
 
-start :: ConnectionOpts -> [ConnectionPoint] -> VirtualHost -> Credentials -> IO Connector
+start :: ConnectionOpts -> ConnectorInfo -> IO Connector
 start = startConnector
 
 stop :: Connector -> IO ()
 stop = stopConnector
 
-get :: Connector -> IO (Maybe (Connection, ConnectionPoint, ConnectionSpeed))
+get :: Connector -> IO (Maybe (Connection, ServerAddress, ConnectionSpeed))
 get = getConnection
 
 get_ :: Connector -> IO (Maybe Connection)
