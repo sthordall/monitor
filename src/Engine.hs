@@ -10,9 +10,8 @@ module Engine
 
 import Control.Concurrent (forkIO)
 import Control.Concurrent.MVar
-import Control.Monad (forM_, void)
+import Control.Monad (void)
 import Data.List (elem)
-import Data.Text.Lazy (pack)
 import Models
 import System.Exit (ExitCode(..))
 import System.FilePath.Find ((~~?), always, fileName, find)
@@ -22,9 +21,9 @@ mergeOutputs :: String -> String -> String
 mergeOutputs "\n" "\n" = ""
 mergeOutputs output "" = output
 mergeOutputs output "\n" = output
-mergeOutputs "" error = error
-mergeOutputs "\n" error = error
-mergeOutputs output error = output ++ "\nERROR(s):\n" ++ error
+mergeOutputs "" err = err
+mergeOutputs "\n" err = err
+mergeOutputs output err = output ++ "\nERROR(s):\n" ++ err
 
 exitToResultCode :: ExitCode -> ResultCode
 exitToResultCode ExitSuccess = OK

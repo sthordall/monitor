@@ -7,13 +7,12 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.MVar
 import Control.Monad (forM_, unless, void, when)
 import Control.Monad.IO.Class (liftIO)
-import Data.Maybe (fromMaybe)
 import Data.Text.Lazy (pack)
 import Data.Time (UTCTime, getCurrentTime)
 import Engine
-import Icinga
+-- import Icinga
 import Models
-import qualified Network.AMQP.Connector as AC
+-- import qualified Network.AMQP.Connector as AC
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
@@ -40,7 +39,7 @@ process opts@Opts {..} var = do
   now <- getCurrentTime
   void $ swapMVar var (reports, now)
   putStrLn $ "done, took " ++ show duration ++ "sec"
-  threadDelay $ optsDelayBetweenChecks * 10 ^ 6
+  threadDelay $ optsDelayBetweenChecks * 10000000
   process opts var
 
 startEngine :: Opts -> MVar State -> IO ()
