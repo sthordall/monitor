@@ -5,26 +5,26 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, amqp, base, bytestring, containers
-      , filemanip, filepath, network, optparse-applicative, process
-      , scotty, stdenv, text, time, timeit, wai-cors, wai-extra
-      , wai-middleware-static
+      , filemanip, filepath, hspec, network, optparse-applicative
+      , process, QuickCheck, scotty, stdenv, text, time, timeit, wai-cors
+      , wai-extra, wai-middleware-static
       , ghc-mod, hlint, hoogle, hindent, stylish-haskell
       }:
       mkDerivation {
-        pname = "monitor";
+        pname = "monitor-lib";
         version = "0.0.1.0";
         src = ./.;
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [
           aeson amqp base bytestring containers filemanip filepath network
-          process text timeit
+          process text time timeit
         ];
         executableHaskellDepends = [
-          base optparse-applicative scotty text time timeit wai-cors
-          wai-extra wai-middleware-static
+          base optparse-applicative scotty text wai-cors wai-extra
+          wai-middleware-static
         ];
-        testHaskellDepends = [ base ];
+        testHaskellDepends = [ base hspec network QuickCheck text ];
         buildDepends = [
           ghc-mod
           hindent

@@ -1,4 +1,4 @@
-name:                monitor
+name:                monitor-lib
 version:             0.0.1.0
 synopsis:            Monitoring aggregator
 description:         Monitoring aggregator
@@ -47,11 +47,11 @@ library
   default-language:    Haskell2010
   ghc-options:        -Wall
 
-executable monitorsvc
+executable monitor
   main-is:             Main.hs
   other-modules:       EngineOptionsParser
   build-depends:       base >=4.9 && <4.10
-                     , monitor
+                     , monitor-lib
                      , wai-cors >= 0.2.5 && < 0.3
                      , wai-extra >= 3.0.20.0 && < 3.1
                      , wai-middleware-static >= 0.8.1 && < 0.9
@@ -66,8 +66,13 @@ test-suite monitor-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
+  other-modules:       Arbitraries
   build-depends:       base
-                     , monitor
+                     , monitor-lib
+                     , network >= 2.6.3.2 && < 2.7
+                     , text >= 1.2.2.1 && < 1.3
+                     , QuickCheck >= 2.9.2 && < 3.0
+                     , hspec >= 2.4.3 && < 2.5
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

@@ -25,6 +25,7 @@ data ServerAddress = ServerAddress
   { serverHost :: String
   , serverPort :: Maybe PortNumber
   }
+  deriving (Eq)
 
 instance Show ServerAddress where
   show ServerAddress {..} = do
@@ -38,12 +39,14 @@ data Credentials = Credentials
   { credLogin :: Text
   , credPassword :: Text
   }
+  deriving (Eq, Show)
 
 data ConnectorInfo = ConnectorInfo
   { cntrAddresses :: [ServerAddress]
   , cntrVirtualHost :: VirtualHost
   , cntrCredentials :: Credentials
   }
+  deriving (Eq, Show)
 
 data ConnectionOpts = ConnectionOpts
   { optsRecoveryInterval :: Int
