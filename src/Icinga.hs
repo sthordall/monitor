@@ -1,5 +1,6 @@
 module Icinga
-  ( post
+  ( module Icinga.Models
+  , post
   , report
   ) where
 

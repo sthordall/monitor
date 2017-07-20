@@ -27,8 +27,6 @@ library
   other-modules:       Helpers
                      , Monitor.Engine.Internal
                      , Monitor.Engine.Models
-                     , Network.AMQP.Bus.Internal
-                     , Network.AMQP.Bus.Models
                      , Network.AMQP.Connector.Internal
                      , Network.AMQP.Connector.Models
   build-depends:       base >=4.9 && <4.10
