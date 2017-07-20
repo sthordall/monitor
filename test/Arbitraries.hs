@@ -16,8 +16,9 @@ clense = clense' ""
 
 instance Arbitrary PortNumber where
   arbitrary = do
-    Positive portNo <- arbitrary
-    return portNo
+    x <- arbitrary :: Gen Integer
+    let portNo = abs x `mod` 10000
+    return (fromIntegral portNo :: PortNumber)
 
 instance Arbitrary ServerAddress where
   arbitrary = do
