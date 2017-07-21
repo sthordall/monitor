@@ -9,7 +9,9 @@ import Monitor.Models (Report)
 
 type LastUpdated = UTCTime
 
-type State = ([Report], LastUpdated)
+type FirstRun = Bool
+
+type State = ([Report], LastUpdated, FirstRun)
 
 data EngineOptions = EngineOptions
   { optsMonitor :: Bool
@@ -17,4 +19,4 @@ data EngineOptions = EngineOptions
   , optsDelayBetweenChecks :: Int
   , optsPath :: FilePath
   }
-
+  deriving (Show)

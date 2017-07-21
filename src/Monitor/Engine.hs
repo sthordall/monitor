@@ -12,61 +12,15 @@ module Monitor.Engine
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.MVar
-import Control.Monad (void)
-import qualified Data.Map as M
+import Control.Monad (void, when)
 import Data.Time (getCurrentTime)
-import Monitor.Models
+import Icinga
 import Monitor.Engine.Internal
 import Monitor.Engine.Models
-import Network.AMQP.Bus
 import Network.AMQP.Connector
 import System.Environment (lookupEnv)
 import System.IO (hFlush, stdout)
 import System.TimeIt (timeItT)
-
-initState :: IO State
-initState = do
-  now <- getCurrentTime
-  return ([], now)
-
-tryReportToRabbit :: Maybe Connector -> [Report] -> IO ()
-tryReportToRabbit Nothing _ = return ()
-tryReportToRabbit _ [] = return ()
-tryReportToRabbit (Just cntr) (r:rs) = do
-  -- TODO: create Icinga data points and post/report
-  void $ publish cntr M.empty r
-  tryReportToRabbit (Just cntr) rs
-
-process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
-process opts@EngineOptions {..} cntr var = do
-  putStr "Checking ... "
-  hFlush stdout
-  (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts)
-  now <- getCurrentTime
-  void $ swapMVar var (reports, now)
-  tryReportToRabbit cntr reports
-  putStrLn $ "done, took " ++ show duration ++ "sec"
-  threadDelay $ optsDelayBetweenChecks * 10000000
-  process opts cntr var
-
-resolveConnectorInfo :: IO (Maybe ConnectorInfo)
-resolveConnectorInfo = do
-  menv <- lookupEnv "RABBITMQ_CONNECTOR_INFO"
-  case menv of
-    Nothing -> return Nothing
-    Just env -> return $ deserialize env
-
-connectionOpts :: ConnectionOpts
-connectionOpts = defOpts {optsLogger = Just putStrLn, optsSpeedRefreshInterval = 10 * 1000000}
-
-startConnector :: IO (Maybe Connector)
-startConnector = do
-  minfo <- resolveConnectorInfo
-  case minfo of
-    Nothing -> return Nothing
-    Just info -> do
-      cntr <- start connectionOpts info
-      return $ Just cntr
 
 startEngine :: EngineOptions -> IO (MVar State)
 startEngine opts = do
@@ -75,3 +29,47 @@ startEngine opts = do
   var <- newMVar state
   void $ forkIO $ process opts cntr var
   return var
+  where
+    initState :: IO State
+    initState = do
+      now <- getCurrentTime
+      return ([], now, True)
+
+process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
+process opts@EngineOptions {..} mcntr var = do
+  putStrLn "Round started ... "
+  hFlush stdout
+  (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts)
+  now <- getCurrentTime
+  (_, _, isFirstRun) <- swapMVar var (reports, now, False)
+  case mcntr of
+    Just cntr -> do
+      when isFirstRun $ do
+        putStrLn "Ensuring checks with Monitoring Service"
+        mapM_ (postScriptReport cntr) reports
+      putStrLn "Reporting results to Monitoring Service"
+      mapM_ (sendScriptReport cntr) reports
+    Nothing -> return ()
+  putStrLn $ "Round completed, took " ++ show duration ++ "sec"
+  threadDelay $ optsDelayBetweenChecks * 1000000
+  process opts mcntr var
+
+startConnector :: IO (Maybe Connector)
+startConnector = do
+  minfo <- resolveConnectorInfo
+  case minfo of
+    Nothing -> do
+      putStrLn "No RabbitMQ details detected ... "
+      return Nothing
+    Just info -> do
+      putStrLn "RabbitMQ details detected!"
+      let opts = defOpts {optsLogger = Nothing, optsSpeedRefreshInterval = 10 * 1000000}
+      cntr <- start opts info
+      return $ Just cntr
+
+resolveConnectorInfo :: IO (Maybe ConnectorInfo)
+resolveConnectorInfo = do
+  menv <- lookupEnv "RABBITMQ_CONNECTOR_INFO"
+  case menv of
+    Nothing -> return Nothing
+    Just env -> return $ deserialize env

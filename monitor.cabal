@@ -21,7 +21,7 @@ library
                      , Icinga.Models
                      , Icinga.Models.ActiveCheck
                      , Icinga.Models.PassiveCheck
-                     , Icinga.Models.Report
+                     , Icinga.Models.CheckReport
                      , Network.AMQP.Bus
                      , Network.AMQP.Connector
   other-modules:       Helpers

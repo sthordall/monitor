@@ -18,6 +18,7 @@ import Web.Scotty
 main :: IO ()
 main = do
   opts@EngineOptions {..} <- parseOptions
+  print opts
   when optsMonitor $ do
     var <- startEngine opts
     scotty optsMonitorPort $ do
@@ -25,10 +26,10 @@ main = do
       middleware simpleCors
       middleware $ staticPolicy (noDots >-> addBase "static")
       get "/status" $ do
-        (reports, _) <- liftIO $ readMVar var
+        (reports, _, _) <- liftIO $ readMVar var
         json reports
       get "/health" $ do
-        (_, lastUpdated) <- liftIO $ readMVar var
+        (_, lastUpdated, _) <- liftIO $ readMVar var
         text $ pack $ show lastUpdated
       get "/ui" $ do
         setHeader "Content-Type" "text/html"

@@ -4,16 +4,17 @@ module Icinga.Models
   , ServiceCheckInfo(..)
   ) where
 
+import Data.Text
 import Icinga.Models.ActiveCheck as X
 import Icinga.Models.PassiveCheck as X
-import Icinga.Models.Report as X
+import Icinga.Models.CheckReport as X
 
 data ServiceCheck
   = PassiveCheck X.PassiveCheck
   | ActiveCheck X.ActiveCheck
 
 data ServiceCheckInfo = ServiceCheckInfo
-  { hostName :: String
-  , serviceName :: String
-  , checkName :: String
+  { hostName :: Text
+  , serviceName :: Text
+  , checkName :: Text
   }
