@@ -58,3 +58,19 @@ nix-shell
 > The development environment that is brought to you by `shell.nix` (implicitly
 > used by `nix-shell`) contains some helper packages that will allow you to use
 > you Vim editor as pretty good Haskell IDE.
+
+## Example of starting in a swarm cluster
+
+```{.bash}
+$ docker service create \
+    --name monitor \
+    --network net \
+    --replicas 1 \
+    -p 3000:3000 \
+    --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+    -e DOCKER_HOST=unix:///var/run/docker.sock \
+    -e RABBITMQ_ADDRESS=http://rabbit-3:15672 \
+    -e RABBITMQ_CREDS=guest:guest \
+    -e RABBITMQ_CONNECTOR_INFO=rabbit-1:5672\|rabbit-2:5672\|rabbit-3:5672\|\|/\|\|guest:guest \
+    docker-hub:5043/fxcore/monitor:0.0.2
+```
