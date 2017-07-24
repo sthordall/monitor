@@ -6,9 +6,11 @@ module Network.AMQP.Bus
   ) where
 
 import Control.Exception (catch)
+import Control.Monad (forM_)
 import Data.Aeson
 import qualified Data.Map as M
 import Data.Text
+import Data.IntSet
 import Network.AMQP
 import Network.AMQP.Types
 import Network.AMQP.Connector
@@ -51,18 +53,25 @@ newChannel cntr = do
     Just (Connection con) ->
       (Just <$> openChannel con) `catch` \(_ :: AMQPException) -> return Nothing
 
-publish :: ToJSON a => Connector -> M.Map Text Text -> a -> IO Bool
-publish cntr headers msg = publish' cntr headers msg `catch` \(_ :: AMQPException) -> return False
+publish :: Connector -> [(M.Map Text Text, Value)] -> IO Bool
+publish cntr msgs = do
+  putStrLn "publishing ..."
+  publish' cntr msgs `catch` \(e :: AMQPException) -> do
+    putStrLn $ "failed to publish: " ++ show e
+    return False
 
-publish' :: ToJSON a => Connector -> M.Map Text Text -> a -> IO Bool
-publish' cntr headers msg = do
+publish' :: Connector -> [(M.Map Text Text, Value)] -> IO Bool
+publish' cntr msgs = do
   mch <- newChannel cntr
   case mch of
     Nothing -> return False
     Just ch -> do
-      let x = mkMessage headers msg
-      mseq <- publishMsg ch "monitoring" "" x
+      confirmSelect ch False
+      forM_ msgs (\(headers, msg) -> publishMsg ch "monitoring" "" $ mkMessage headers msg)
+      showResult =<< waitForConfirms ch
       closeChannel ch
-      case mseq of
-        Nothing -> return False
-        Just _ -> return True
+      return True
+
+showResult :: ConfirmationResult -> IO ()
+showResult (Partial (a, n, p)) = putStrLn $ "Acks: "++(show . size $ a)++" Nacks: "++(show . size $ n)++" pending: "++(show . size $ p)
+showResult (Complete (a, n)) = putStrLn $ "Acks: "++(show . size $ a)++" Nacks: "++(show . size $ n)

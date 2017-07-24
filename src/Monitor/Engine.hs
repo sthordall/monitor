@@ -46,9 +46,9 @@ process opts@EngineOptions {..} mcntr var = do
     Just cntr -> do
       when isFirstRun $ do
         putStrLn "Ensuring checks with Monitoring Service"
-        mapM_ (postScriptReport cntr) reports
+        postScriptReports cntr reports
       putStrLn "Reporting results to Monitoring Service"
-      mapM_ (sendScriptReport cntr) reports
+      sendScriptReports cntr reports
     Nothing -> return ()
   putStrLn $ "Round completed, took " ++ show duration ++ "sec"
   threadDelay $ optsDelayBetweenChecks * 1000000
@@ -63,7 +63,7 @@ startConnector = do
       return Nothing
     Just info -> do
       putStrLn "RabbitMQ details detected!"
-      let opts = defOpts {optsLogger = Nothing, optsSpeedRefreshInterval = 10 * 1000000}
+      let opts = defOpts {optsLogger = Just putStrLn, optsSpeedRefreshInterval = 10 * 1000000}
       cntr <- start opts info
       return $ Just cntr
 

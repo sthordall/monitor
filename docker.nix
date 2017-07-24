@@ -29,6 +29,7 @@ in
         "DOCKER_HOST="
         "RABBITMQ_ADDRESS="
         "RABBITMQ_CREDS="
+        "RABBITMQ_CONNECTOR_INFO="
       ];
       WorkingDir = "/app";
       ExposedPorts = {

@@ -3,12 +3,13 @@
 
 module Icinga
   ( module Icinga.Models
-  , postScriptReport
-  , sendScriptReport
+  , postScriptReports
+  , sendScriptReports
   ) where
 
 import Control.Monad (void)
 import qualified Data.Map as M
+import Data.Aeson (toJSON)
 import Data.List (reverse)
 import Data.Text (Text, pack, unpack)
 import Icinga.Models
@@ -59,39 +60,37 @@ toCheckReport Report {..} =
        , pluginOutput = details
        }
 
-postScriptReport :: Connector -> Report -> IO ()
-postScriptReport cntr rep =
-  let info = toCheckInfo rep
-      check = toCheck rep
-  in post cntr info check
+postScriptReports :: Connector -> [Report] -> IO ()
+postScriptReports cntr reps = void $ publish cntr $ map prep reps
+  where
+    prep rep = do
+      let info = toCheckInfo rep
+          check = toCheck rep
+          reportOk =
+            case check of
+              PassiveCheck _ -> "true"
+              ActiveCheck _ -> "false"
+          headers = M.fromList
+            [ ("_request", "ensure-service")
+            , ("hostname", hostName info)
+            , ("servicename", serviceName info)
+            , ("checkname", checkName info)
+            , ("report-ok", reportOk)
+            , ("tmp", "tmp")
+            ]
+      case check of
+        PassiveCheck ch -> (headers, toJSON ch)
+        ActiveCheck ch -> (headers, toJSON ch)
 
-post :: Connector -> ServiceCheckInfo -> ServiceCheck -> IO ()
-post cntr info check = do
-  let reportOk =
-        case check of
-          PassiveCheck _ -> "true"
-          ActiveCheck _ -> "false"
-  let headers = M.fromList
-        [ ("request", "ensure-service")
-        , ("hostname", hostName info)
-        , ("servicename", serviceName info)
-        , ("checkname", checkName info)
-        , ("report-ok", reportOk)
-        ]
-  case check of
-    PassiveCheck ch -> void $ publish cntr headers ch
-    ActiveCheck ch -> void $ publish cntr headers ch
-
-sendScriptReport :: Connector -> Report -> IO ()
-sendScriptReport cntr rep =
-  let info = toCheckInfo rep
-  in send cntr info rep
-
-send :: Connector -> ServiceCheckInfo -> Report -> IO ()
-send cntr info rep = do
-  let headers = M.fromList
-        [ ("request", "report")
-        , ("hostname", hostName info)
-        , ("checkname", checkName info)
-        ]
-  void $ publish cntr headers $ toCheckReport rep
+sendScriptReports :: Connector -> [Report] -> IO ()
+sendScriptReports cntr reps = void $ publish cntr $ map prep reps
+  where
+    prep rep = do
+      let info = toCheckInfo rep
+          headers = M.fromList
+            [ ("_request", "report")
+            , ("hostname", hostName info)
+            , ("checkname", checkName info)
+            , ("tmp", "tmp")
+            ]
+      (headers, toJSON $ toCheckReport rep)
