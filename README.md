@@ -61,6 +61,9 @@ nix-shell
 
 ## Example of starting in a swarm cluster
 
+To start monitor with default settings (service mode with HTTP endpoint, and 30
+seconds delay between runs):
+
 ```{.bash}
 $ docker service create \
     --name monitor \
@@ -74,3 +77,23 @@ $ docker service create \
     -e RABBITMQ_CONNECTOR_INFO=rabbit-1:5672\|rabbit-2:5672\|rabbit-3:5672\|\|/\|\|guest:guest \
     monitor
 ```
+
+To customize start parameters (let's say to set delay to 5 seconds):
+
+```{.bash}
+$ docker service create \
+    --name monitor \
+    --network net \
+    --replicas 1 \
+    -p 3000:3000 \
+    --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+    -e DOCKER_HOST=unix:///var/run/docker.sock \
+    -e RABBITMQ_ADDRESS=http://rabbit-3:15672 \
+    -e RABBITMQ_CREDS=guest:guest \
+    -e RABBITMQ_CONNECTOR_INFO=rabbit-1:5672\|rabbit-2:5672\|rabbit-3:5672\|\|/\|\|guest:guest \
+    monitor monitor -m -p ./checks --delay 5
+```
+
+> `-m` will instruct monitor to run in a service mode. `-p ./checks` - where to
+> find check scripts, and `--delay 5` - how long should be the pause in between
+> script runs.
