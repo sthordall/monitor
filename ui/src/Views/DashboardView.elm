@@ -253,8 +253,8 @@ config model =
             ]
 
 
-recordBox : ( Float, Float ) -> ( ( Int, Int ), Record ) -> Svg Msg
-recordBox ( iw, ih ) ( ( j, i ), record ) =
+recordBox : Model -> ( Float, Float ) -> ( ( Int, Int ), Record ) -> Svg Msg
+recordBox model ( iw, ih ) ( ( j, i ), record ) =
     let
         margin =
             2
@@ -266,15 +266,18 @@ recordBox ( iw, ih ) ( ( j, i ), record ) =
             (toFloat j) * ih
 
         fillColor =
-            case record.result.resultCode of
-                "OK" ->
-                    "#5cb85c"
+            case model.errorMessage of
+                Just _ -> "gray"
+                Nothing ->
+                    case record.result.resultCode of
+                        "OK" ->
+                            "#5cb85c"
 
-                "Warning" ->
-                    "#f0ad4e"
+                        "Warning" ->
+                            "#f0ad4e"
 
-                _ ->
-                    "#d9534f"
+                        _ ->
+                            "#d9534f"
 
         pathParts =
             record.path
@@ -337,8 +340,8 @@ recordBox ( iw, ih ) ( ( j, i ), record ) =
             ]
 
 
-recordsTable : ( Int, Int, Int, Int ) -> List Record -> List (Svg Msg)
-recordsTable ( tx, ty, tw, th ) records =
+recordsTable : Model -> ( Int, Int, Int, Int ) -> List Record -> List (Svg Msg)
+recordsTable model ( tx, ty, tw, th ) records =
     let
         count =
             records |> List.length
@@ -362,7 +365,7 @@ recordsTable ( tx, ty, tw, th ) records =
         ih =
             (toFloat th) / (toFloat m)
     in
-        records |> List.map2 (,) indices |> List.map (recordBox ( iw, ih ))
+        records |> List.map2 (,) indices |> List.map (recordBox model ( iw, ih ))
 
 
 view : Model -> Html Msg
@@ -402,7 +405,7 @@ view model =
             ((if showDetails then
                 [ div [ HtmlA.class "col-sm-8" ]
                     [ svg [ SvgA.viewBox strViewBoxSize_8_12, SvgA.width "100%", SvgA.height "100%" ]
-                        (model.data.records |> recordsTable ( 0, 0, areaWidth812, areaHeight812 ))
+                        (model.data.records |> recordsTable model ( 0, 0, areaWidth812, areaHeight812 ))
                     ]
                 , div [ HtmlA.class "col-sm-4" ]
                     [ details settings model
@@ -411,7 +414,7 @@ view model =
               else
                 [ div [ HtmlA.class "col-sm-12" ]
                     [ svg [ SvgA.viewBox strViewBoxSize, SvgA.width "100%", SvgA.height "100%" ]
-                        (model.data.records |> recordsTable ( 0, 0, areaWidth, areaHeight ))
+                        (model.data.records |> recordsTable model ( 0, 0, areaWidth, areaHeight ))
                     ]
                 ]
              )

@@ -10119,7 +10119,7 @@ var _kuznero$monitor$Processors_DashboardProcessor$process = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{errorMessage: _elm_lang$core$Maybe$Nothing, view: _kuznero$monitor$Model$DashboardView}),
+						{view: _kuznero$monitor$Model$DashboardView}),
 					_1: A2(
 						_elm_lang$core$Task$attempt,
 						function (x) {
@@ -10147,6 +10147,7 @@ var _kuznero$monitor$Processors_DashboardProcessor$process = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
+								errorMessage: _elm_lang$core$Maybe$Nothing,
 								data: _elm_lang$core$Native_Utils.update(
 									data,
 									{
@@ -10246,14 +10247,14 @@ var _kuznero$monitor$Processors_Processor$processor = F2(
 		}
 	});
 
-var _kuznero$monitor$Views_DashboardView$recordBox = F2(
-	function (_p1, _p0) {
+var _kuznero$monitor$Views_DashboardView$recordBox = F3(
+	function (model, _p1, _p0) {
 		var _p2 = _p1;
-		var _p7 = _p2._0;
-		var _p6 = _p2._1;
+		var _p8 = _p2._0;
+		var _p7 = _p2._1;
 		var _p3 = _p0;
-		var _p5 = _p3._1;
-		var pathParts = A2(_elm_lang$core$String$split, '/', _p5.path);
+		var _p6 = _p3._1;
+		var pathParts = A2(_elm_lang$core$String$split, '/', _p6.path);
 		var label = A2(
 			_elm_lang$core$Maybe$withDefault,
 			'',
@@ -10278,18 +10279,23 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F2(
 								_elm_lang$core$List$head(
 									_elm_lang$core$List$reverse(pathParts))))))));
 		var fillColor = function () {
-			var _p4 = _p5.result.resultCode;
-			switch (_p4) {
-				case 'OK':
-					return '#5cb85c';
-				case 'Warning':
-					return '#f0ad4e';
-				default:
-					return '#d9534f';
+			var _p4 = model.errorMessage;
+			if (_p4.ctor === 'Just') {
+				return 'gray';
+			} else {
+				var _p5 = _p6.result.resultCode;
+				switch (_p5) {
+					case 'OK':
+						return '#5cb85c';
+					case 'Warning':
+						return '#f0ad4e';
+					default:
+						return '#d9534f';
+				}
 			}
 		}();
-		var iy = _elm_lang$core$Basics$toFloat(_p3._0._0) * _p6;
-		var ix = _elm_lang$core$Basics$toFloat(_p3._0._1) * _p7;
+		var iy = _elm_lang$core$Basics$toFloat(_p3._0._0) * _p7;
+		var ix = _elm_lang$core$Basics$toFloat(_p3._0._1) * _p8;
 		var margin = 2;
 		return A2(
 			_elm_lang$svg$Svg$g,
@@ -10309,11 +10315,11 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F2(
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$width(
-									_elm_lang$core$Basics$toString(_p7 - (margin * 2))),
+									_elm_lang$core$Basics$toString(_p8 - (margin * 2))),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$svg$Svg_Attributes$height(
-										_elm_lang$core$Basics$toString(_p6 - (margin * 2))),
+										_elm_lang$core$Basics$toString(_p7 - (margin * 2))),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$svg$Svg_Attributes$fill(fillColor),
@@ -10331,25 +10337,25 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F2(
 						{
 							ctor: '::',
 							_0: _elm_lang$svg$Svg_Attributes$x(
-								_elm_lang$core$Basics$toString(ix + (_p7 / 2))),
+								_elm_lang$core$Basics$toString(ix + (_p8 / 2))),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$y(
-									_elm_lang$core$Basics$toString(iy + (_p6 / 3))),
+									_elm_lang$core$Basics$toString(iy + (_p7 / 3))),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$svg$Svg_Attributes$fontSize(
-											_elm_lang$core$Basics$toString(_p7 / 6)),
+											_elm_lang$core$Basics$toString(_p8 / 6)),
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$svg$Svg_Attributes$fill('aliceblue'),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$svg$Svg_Attributes$textLength(
-													_elm_lang$core$Basics$toString((_p7 * 2) / 3)),
+													_elm_lang$core$Basics$toString((_p8 * 2) / 3)),
 												_1: {ctor: '[]'}
 											}
 										}
@@ -10369,18 +10375,18 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F2(
 							{
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$x(
-									_elm_lang$core$Basics$toString(ix + (_p7 / 2))),
+									_elm_lang$core$Basics$toString(ix + (_p8 / 2))),
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$svg$Svg_Attributes$y(
-										_elm_lang$core$Basics$toString(iy + ((4 * _p6) / 9))),
+										_elm_lang$core$Basics$toString(iy + ((4 * _p7) / 9))),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$svg$Svg_Attributes$fontSize(
-												_elm_lang$core$Basics$toString(_p7 / 12)),
+												_elm_lang$core$Basics$toString(_p8 / 12)),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$svg$Svg_Attributes$fill('aliceblue'),
@@ -10398,7 +10404,7 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F2(
 										{
 											ctor: '::',
 											_0: _elm_lang$svg$Svg_Attributes$x(
-												_elm_lang$core$Basics$toString(ix + (_p7 / 2))),
+												_elm_lang$core$Basics$toString(ix + (_p8 / 2))),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$svg$Svg_Attributes$dy('1.2em'),
@@ -10421,20 +10427,20 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F2(
 				}
 			});
 	});
-var _kuznero$monitor$Views_DashboardView$recordsTable = F2(
-	function (_p8, records) {
-		var _p9 = _p8;
-		var _p11 = _p9._2;
-		var _p10 = _p9._3;
-		var proportion = _elm_lang$core$Basics$toFloat(_p10) / _elm_lang$core$Basics$toFloat(_p11);
+var _kuznero$monitor$Views_DashboardView$recordsTable = F3(
+	function (model, _p9, records) {
+		var _p10 = _p9;
+		var _p12 = _p10._2;
+		var _p11 = _p10._3;
+		var proportion = _elm_lang$core$Basics$toFloat(_p11) / _elm_lang$core$Basics$toFloat(_p12);
 		var count = _elm_lang$core$List$length(records);
 		var m = _elm_lang$core$Basics$round(
 			_elm_lang$core$Basics$sqrt(
 				_elm_lang$core$Basics$toFloat(count) * proportion));
-		var ih = _elm_lang$core$Basics$toFloat(_p10) / _elm_lang$core$Basics$toFloat(m);
+		var ih = _elm_lang$core$Basics$toFloat(_p11) / _elm_lang$core$Basics$toFloat(m);
 		var n = _elm_lang$core$Basics$ceiling(
 			_elm_lang$core$Basics$toFloat(count) / _elm_lang$core$Basics$toFloat(m));
-		var iw = _elm_lang$core$Basics$toFloat(_p11) / _elm_lang$core$Basics$toFloat(n);
+		var iw = _elm_lang$core$Basics$toFloat(_p12) / _elm_lang$core$Basics$toFloat(n);
 		var indices = A2(
 			_elm_lang$core$List$map,
 			function (i) {
@@ -10449,7 +10455,9 @@ var _kuznero$monitor$Views_DashboardView$recordsTable = F2(
 			A2(_elm_lang$core$List$range, 0, count - 1));
 		return A2(
 			_elm_lang$core$List$map,
-			_kuznero$monitor$Views_DashboardView$recordBox(
+			A2(
+				_kuznero$monitor$Views_DashboardView$recordBox,
+				model,
 				{ctor: '_Tuple2', _0: iw, _1: ih}),
 			A3(
 				_elm_lang$core$List$map2,
@@ -10572,8 +10580,8 @@ var _kuznero$monitor$Views_DashboardView$config = function (model) {
 var _kuznero$monitor$Views_DashboardView$details = F2(
 	function (settings, model) {
 		var resultCodeWeight = function (resultCode) {
-			var _p12 = resultCode;
-			switch (_p12) {
+			var _p13 = resultCode;
+			switch (_p13) {
 				case 'OK':
 					return 2;
 				case 'Warning':
@@ -10759,8 +10767,8 @@ var _kuznero$monitor$Views_DashboardView$details = F2(
 				}
 			});
 		var rcStyle = function (resultCode) {
-			var _p13 = resultCode;
-			switch (_p13) {
+			var _p14 = resultCode;
+			switch (_p14) {
 				case 'OK':
 					return okStyle;
 				case 'Warning':
@@ -10858,8 +10866,8 @@ var _kuznero$monitor$Views_DashboardView$details = F2(
 		var matchesFilter = function (r) {
 			var reduce = F2(
 				function (ch, line) {
-					var _p14 = ch;
-					if (_p14.valueOf() === '*') {
+					var _p15 = ch;
+					if (_p15.valueOf() === '*') {
 						return A2(_elm_lang$core$Basics_ops['++'], '.+', line);
 					} else {
 						return A2(
@@ -10897,8 +10905,8 @@ var _kuznero$monitor$Views_DashboardView$details = F2(
 		};
 		var sortMode = model.data.sortBy;
 		var orderedRecords = function () {
-			var _p15 = sortMode;
-			if (_p15.ctor === 'ByPath') {
+			var _p16 = sortMode;
+			if (_p16.ctor === 'ByPath') {
 				return A2(
 					_elm_lang$core$List$sortBy,
 					function (_) {
@@ -11110,8 +11118,9 @@ var _kuznero$monitor$Views_DashboardView$view = function (model) {
 									}
 								}
 							},
-							A2(
+							A3(
 								_kuznero$monitor$Views_DashboardView$recordsTable,
+								model,
 								{ctor: '_Tuple4', _0: 0, _1: 0, _2: areaWidth812, _3: areaHeight812},
 								model.data.records)),
 						_1: {ctor: '[]'}
@@ -11158,8 +11167,9 @@ var _kuznero$monitor$Views_DashboardView$view = function (model) {
 									}
 								}
 							},
-							A2(
+							A3(
 								_kuznero$monitor$Views_DashboardView$recordsTable,
+								model,
 								{ctor: '_Tuple4', _0: 0, _1: 0, _2: areaWidth, _3: areaHeight},
 								model.data.records)),
 						_1: {ctor: '[]'}

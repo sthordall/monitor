@@ -21,7 +21,7 @@ process model cmd =
                 if not model.isConnected then
                     ( model, Cmd.none )
                 else
-                    ( { model | errorMessage = Nothing, view = DashboardView }
+                    ( { model | view = DashboardView }
                     , Task.attempt (\x -> DashboardMsg (QueryDataCompletedCmd x)) task
                     )
 
@@ -33,7 +33,7 @@ process model cmd =
                 data =
                     model.data
             in
-                ( { model | data = { data | records = records, lastUpdated = Just now } }
+                ( { model | errorMessage = Nothing, data = { data | records = records, lastUpdated = Just now } }
                 , Task.perform (\x -> DashboardMsg (WindowResizesCmd x)) Window.size
                 )
 
