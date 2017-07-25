@@ -285,7 +285,7 @@ recordBox model ( iw, ih ) ( ( j, i ), record ) =
 
         label =
             pathParts
-                |> List.drop 1
+                |> List.drop 2
                 |> List.head
                 |> withDefault ""
 

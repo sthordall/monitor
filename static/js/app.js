@@ -10259,7 +10259,7 @@ var _kuznero$monitor$Views_DashboardView$recordBox = F3(
 			_elm_lang$core$Maybe$withDefault,
 			'',
 			_elm_lang$core$List$head(
-				A2(_elm_lang$core$List$drop, 1, pathParts)));
+				A2(_elm_lang$core$List$drop, 2, pathParts)));
 		var checkName = A2(
 			_elm_lang$core$List$drop,
 			1,
