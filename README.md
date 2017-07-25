@@ -96,4 +96,4 @@ $ docker service create \
 
 > `-m` will instruct monitor to run in a service mode. `-p ./checks` - where to
 > find check scripts, and `--delay 5` - how long should be the pause in between
-> script runs.
+> script runs in seconds.
