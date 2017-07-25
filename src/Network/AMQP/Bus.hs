@@ -54,8 +54,7 @@ newChannel cntr = do
       (Just <$> openChannel con) `catch` \(_ :: AMQPException) -> return Nothing
 
 publish :: Connector -> [(M.Map Text Text, Value)] -> IO Bool
-publish cntr msgs = do
-  putStrLn "publishing ..."
+publish cntr msgs =
   publish' cntr msgs `catch` \(e :: AMQPException) -> do
     putStrLn $ "failed to publish: " ++ show e
     return False

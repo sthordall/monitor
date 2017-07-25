@@ -5,8 +5,8 @@ module Network.AMQP.Connector.Models
   , VirtualHost
   , Credentials(..)
   , ConnectorInfo(..)
+  , Logger(..)
   , ConnectionOpts(..)
-  , defOpts
   , ConnectionInfo(..)
   , ConnectionSpeed
   , LastMeasured
@@ -48,24 +48,19 @@ data ConnectorInfo = ConnectorInfo
   }
   deriving (Eq, Show)
 
+data Logger = Logger
+  { loggerTrace :: Maybe (String -> IO ())
+  , loggerInfo :: Maybe (String -> IO ())
+  , loggerWarn :: Maybe (String -> IO ())
+  , loggerError :: Maybe (String -> IO ())
+  }
+
 data ConnectionOpts = ConnectionOpts
   { optsRecoveryInterval :: Int
   , optsRetryInterval :: Int
   , optsSpeedRefreshInterval :: Int
-  , optsLogger :: Maybe (String -> IO ())
+  , optsLogger :: Logger
   }
-
-pow :: Int -> Int -> Int
-pow x p = x ^ p
-
-ms :: Int -> Int
-ms n = n * (10 `pow` 3)
-
-sec :: Int -> Int
-sec n = n * (10 `pow` 6)
-
-defOpts :: ConnectionOpts
-defOpts = ConnectionOpts (sec 5) (ms 10) (sec 30) Nothing
 
 type ConnectionSpeed = Double
 
@@ -73,7 +68,7 @@ type LastMeasured = Int
 
 data ConnectionInfo = ConnectionInfo
   { infoPoint :: ServerAddress
-  , infoLogger :: Maybe (String -> IO ())
+  , infoLogger :: Logger
   , infoConnection :: MVar (A.Connection, ServerAddress, ConnectionSpeed, LastMeasured)
   , infoClosedFlag :: MVar ()
   , infoShuttingDownFlag :: MVar ()

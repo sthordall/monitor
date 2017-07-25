@@ -11,7 +11,7 @@ import Control.Monad (void)
 import qualified Data.Map as M
 import Data.Aeson (toJSON)
 import Data.List (reverse)
-import Data.Text (Text, pack, unpack)
+import Data.Text (Text, pack, unpack, append)
 import Icinga.Models
 import Monitor.Models
 import Network.AMQP.Bus (publish)
@@ -28,9 +28,11 @@ scriptCategory path = do
 scriptName :: FilePath -> Text
 scriptName path = do
   let parts = reverse $ splitPath $ dropExtension path
-  pack $ case parts of
-    [] -> ""
-    (x:_) -> x
+      category = scriptCategory path `append` "--"
+      name = pack $ case parts of
+               [] -> ""
+               (x:_) -> x
+  category `append` name
 
 toCheckInfo :: Report -> ServiceCheckInfo
 toCheckInfo Report {..} = do
@@ -45,7 +47,7 @@ toCheckInfo Report {..} = do
 
 toCheck :: Report -> ServiceCheck
 toCheck Report {..} = ActiveCheck $
-  mkActiveCheck (unpack $ scriptName path) 2 1
+  mkActiveCheck (unpack $ scriptName path) 120 60
 
 toCheckReport :: Report -> CheckReport
 toCheckReport Report {..} =
@@ -71,12 +73,11 @@ postScriptReports cntr reps = void $ publish cntr $ map prep reps
               PassiveCheck _ -> "true"
               ActiveCheck _ -> "false"
           headers = M.fromList
-            [ ("_request", "ensure-service")
+            [ ("request", "ensure-service")
             , ("hostname", hostName info)
             , ("servicename", serviceName info)
             , ("checkname", checkName info)
             , ("report-ok", reportOk)
-            , ("tmp", "tmp")
             ]
       case check of
         PassiveCheck ch -> (headers, toJSON ch)
@@ -88,9 +89,8 @@ sendScriptReports cntr reps = void $ publish cntr $ map prep reps
     prep rep = do
       let info = toCheckInfo rep
           headers = M.fromList
-            [ ("_request", "report")
+            [ ("request", "report")
             , ("hostname", hostName info)
             , ("checkname", checkName info)
-            , ("tmp", "tmp")
             ]
       (headers, toJSON $ toCheckReport rep)

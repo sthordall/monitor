@@ -8,10 +8,15 @@ module Network.AMQP.Connector
   , get
   , get_
   , ConnectionOpts(..)
-  , defOpts
+  , defConnectionOpts
   , ServerAddress(..)
   , VirtualHost
   , Credentials(..)
+  , Logger
+  , mkTraceLogger
+  , mkInfoLogger
+  , mkWarnLogger
+  , mkErrorLogger
   , ConnectorInfo(..)
   , serialize
   , deserialize

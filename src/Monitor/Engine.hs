@@ -19,7 +19,6 @@ import Monitor.Engine.Internal
 import Monitor.Engine.Models
 import Network.AMQP.Connector
 import System.Environment (lookupEnv)
-import System.IO (hFlush, stdout)
 import System.TimeIt (timeItT)
 
 startEngine :: EngineOptions -> IO (MVar State)
@@ -38,7 +37,6 @@ startEngine opts = do
 process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
 process opts@EngineOptions {..} mcntr var = do
   putStrLn "Round started ... "
-  hFlush stdout
   (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts)
   now <- getCurrentTime
   (_, _, isFirstRun) <- swapMVar var (reports, now, False)
@@ -63,7 +61,7 @@ startConnector = do
       return Nothing
     Just info -> do
       putStrLn "RabbitMQ details detected!"
-      let opts = defOpts {optsLogger = Just putStrLn, optsSpeedRefreshInterval = 10 * 1000000}
+      let opts = defConnectionOpts {optsLogger = mkInfoLogger, optsSpeedRefreshInterval = 10 * 1000000}
       cntr <- start opts info
       return $ Just cntr
 
