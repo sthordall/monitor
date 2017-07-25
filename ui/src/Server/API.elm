@@ -2,6 +2,7 @@ module Server.API exposing (..)
 
 import Http exposing (..)
 import Model exposing (..)
+import Time exposing (second)
 
 
 loadRecords : Model -> Http.Request (List Record)
@@ -21,6 +22,6 @@ loadRecords model =
             , url = url
             , body = emptyBody
             , expect = expectJson recordListDecoder
-            , timeout = Nothing
+            , timeout = Just (5 * second)
             , withCredentials = False
             }

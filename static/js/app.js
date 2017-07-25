@@ -10096,7 +10096,7 @@ var _kuznero$monitor$Server_API$loadRecords = function (model) {
 			url: url,
 			body: _elm_lang$http$Http$emptyBody,
 			expect: _elm_lang$http$Http$expectJson(_kuznero$monitor$Model$recordListDecoder),
-			timeout: _elm_lang$core$Maybe$Nothing,
+			timeout: _elm_lang$core$Maybe$Just(5 * _elm_lang$core$Time$second),
 			withCredentials: false
 		});
 };
