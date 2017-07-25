@@ -72,5 +72,5 @@ $ docker service create \
     -e RABBITMQ_ADDRESS=http://rabbit-3:15672 \
     -e RABBITMQ_CREDS=guest:guest \
     -e RABBITMQ_CONNECTOR_INFO=rabbit-1:5672\|rabbit-2:5672\|rabbit-3:5672\|\|/\|\|guest:guest \
-    docker-hub:5043/fxcore/monitor:0.0.2
+    monitor
 ```
