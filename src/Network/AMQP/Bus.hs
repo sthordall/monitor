@@ -66,7 +66,7 @@ publish' cntr msgs = do
     Nothing -> return False
     Just ch -> do
       confirmSelect ch False
-      forM_ msgs (\(headers, msg) -> publishMsg ch "monitoring" "" $ mkMessage headers msg)
+      forM_ msgs (\(headers, msg) -> publishMsg ch "monitor" "" $ mkMessage headers msg)
       showResult =<< waitForConfirms ch
       closeChannel ch
       return True
