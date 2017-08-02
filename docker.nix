@@ -7,6 +7,7 @@ let
       (haskell.lib.justStaticExecutables (import ./default.nix {}));
   checks = import ./checks.nix { inherit stdenv; };
   static = import ./static.nix { inherit stdenv; };
+  init = import ./init.nix { inherit stdenv; };
 in
   dockerTools.buildImage {
     name = "monitor";
@@ -29,6 +30,7 @@ in
       jq
       main
       static
+      init
     ];
     config = {
       Env = [
@@ -36,6 +38,7 @@ in
         "RABBITMQ_ADDRESS="
         "RABBITMQ_CREDS="
         "RABBITMQ_CONNECTOR_INFO="
+        "SERVER_URL="
       ];
       WorkingDir = "/app";
       ExposedPorts = {
@@ -44,6 +47,6 @@ in
       Volumes = {
         "/checks" = {};
       };
-      Cmd = [ "${main}/bin/monitor" "-m" "-p" "./checks" ];
+      Cmd = [ "./init.sh" ];
     };
   }
