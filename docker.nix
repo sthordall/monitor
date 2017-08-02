@@ -39,6 +39,7 @@ in
         "RABBITMQ_CREDS="
         "RABBITMQ_CONNECTOR_INFO="
         "SERVER_URL="
+        "MONITORING_DELAY="
       ];
       WorkingDir = "/app";
       ExposedPorts = {
