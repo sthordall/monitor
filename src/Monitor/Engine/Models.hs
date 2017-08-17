@@ -17,6 +17,7 @@ data EngineOptions = EngineOptions
   { optsMonitor :: Bool
   , optsMonitorPort :: Int
   , optsDelayBetweenChecks :: Int
+  , optsCheckTimeout :: Int
   , optsPath :: FilePath
   }
   deriving (Show)

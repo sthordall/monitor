@@ -24,6 +24,12 @@ optsParser = EngineOptions
       <> value 30
       <> metavar "DELAY_BETWEEN_CHECKS_SECONDS"
       <> help "Defines delay between checks in seconds" )
+  <*> option auto
+      (  long "timeout"
+      <> showDefault
+      <> value 10
+      <> metavar "TIMEOUT_IN_SECONDS_FOR_A_CHECK_TO_RUN"
+      <> help "Defines timeout value in seconds for a check to run" )
   <*> strOption
       (  long "path"
       <> short 'p'

@@ -37,7 +37,7 @@ startEngine opts = do
 process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
 process opts@EngineOptions {..} mcntr var = do
   putStrLn "Round started ... "
-  (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts)
+  (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts opts)
   now <- getCurrentTime
   (_, _, isFirstRun) <- swapMVar var (reports, now, False)
   case mcntr of

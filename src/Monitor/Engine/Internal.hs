@@ -12,10 +12,13 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.MVar
 import Control.Monad (void)
 import Data.List (elem)
+import Data.Maybe (fromMaybe)
 import Monitor.Models
+import Monitor.Engine.Models
 import System.Exit (ExitCode(..))
 import System.FilePath.Find ((~~?), always, fileName, find)
 import System.Process (readProcessWithExitCode)
+import System.Timeout (timeout)
 
 mergeOutputs :: String -> String -> String
 mergeOutputs "\n" "\n" = ""
@@ -33,23 +36,24 @@ exitToResultCode (ExitFailure _) = Error
 detectScripts :: FilePath -> IO [FilePath]
 detectScripts = find always (fileName ~~? "*.sh")
 
-runScript :: (FilePath, MVar Result) -> IO ()
-runScript (path, var) = do
-  (rc, out, err) <- readProcessWithExitCode path [] ""
+runScript :: EngineOptions -> (FilePath, MVar Result) -> IO ()
+runScript EngineOptions {..} (path, var) = do
+  result <- timeout (optsCheckTimeout * 1000000) $ readProcessWithExitCode path [] ""
+  let (rc, out, err) = fromMaybe (ExitFailure 1, "", "Check timed out") result
   putMVar var $ Result (exitToResultCode rc) $ mergeOutputs out err
 
-startScript :: (FilePath, MVar Result) -> IO ()
-startScript = void . forkIO . runScript
+startScript :: EngineOptions -> (FilePath, MVar Result) -> IO ()
+startScript opts x = void $ forkIO $ runScript opts x
 
 waitScriptFinish :: (FilePath, MVar Result) -> IO Report
 waitScriptFinish (path, var) = do
   result <- takeMVar var
   return $ Report path result
 
-executeScripts :: [FilePath] -> IO [Report]
-executeScripts scripts = do
+executeScripts :: EngineOptions -> [FilePath] -> IO [Report]
+executeScripts opts scripts = do
   xs <- mapM initEmptyMVar scripts
-  mapM_ startScript xs
+  mapM_ (startScript opts) xs
   mapM waitScriptFinish xs
   where
     initEmptyMVar :: FilePath -> IO (FilePath, MVar Result)
