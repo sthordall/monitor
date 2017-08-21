@@ -25,6 +25,7 @@ import Control.Monad (when, void)
 import Data.Foldable (forM_)
 import Data.List (sortBy)
 import Data.Maybe (fromMaybe, catMaybes)
+import Helpers
 import qualified Network.AMQP as A
 import Network.AMQP.Connector.Models
 import Prelude hiding (log)
@@ -150,7 +151,7 @@ closeConnection con =
   catch (A.closeConnection con >> return (Just ())) (\(_ :: A.AMQPException) -> return Nothing)
 
 mkLineLogger:: Maybe (String -> IO ())
-mkLineLogger = Just putStrLn
+mkLineLogger = Just log
 
 mkEmptyLogger :: Logger
 mkEmptyLogger = Logger Nothing Nothing Nothing Nothing

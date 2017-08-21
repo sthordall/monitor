@@ -9,7 +9,7 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Text.Lazy (pack)
 import Monitor
 import Network.Wai.Middleware.Cors (simpleCors)
-import Network.Wai.Middleware.RequestLogger
+-- import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
 import EngineOptionsParser
 import System.Exit (exitWith)
@@ -22,7 +22,7 @@ main = do
   when optsMonitor $ do
     var <- startEngine opts
     scotty optsMonitorPort $ do
-      middleware logStdoutDev
+      -- middleware logStdoutDev
       middleware simpleCors
       middleware $ staticPolicy (noDots >-> addBase "static")
       get "/status" $ do

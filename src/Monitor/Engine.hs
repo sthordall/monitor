@@ -15,10 +15,12 @@ import Control.Concurrent.MVar
 import Control.Exception (SomeException, handle)
 import Control.Monad (void, when)
 import Data.Time (getCurrentTime)
+import Helpers
 import Icinga
 import Monitor.Engine.Internal
 import Monitor.Engine.Models
 import Network.AMQP.Connector
+import Prelude hiding (log)
 import System.Environment (lookupEnv)
 import System.TimeIt (timeItT)
 
@@ -37,7 +39,7 @@ startEngine opts = do
 
 process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
 process opts@EngineOptions {..} mcntr var = do
-  putStrLn "Round started ... "
+  log "Round started ... "
   handle onError $ do
     (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts opts)
     now <- getCurrentTime
@@ -45,27 +47,27 @@ process opts@EngineOptions {..} mcntr var = do
     case mcntr of
       Just cntr -> do
         when isFirstRun $ do
-          putStrLn "Ensuring checks with Monitoring Service"
+          log "Ensuring checks with Monitoring Service"
           postScriptReports cntr reports
-        putStrLn "Reporting results to Monitoring Service"
+        log "Reporting results to Monitoring Service"
         sendScriptReports cntr reports
       Nothing -> return ()
-    putStrLn $ "Round completed, took " ++ show duration ++ "sec"
+    log $ "Round completed, took " ++ show duration ++ "sec"
   threadDelay $ optsDelayBetweenChecks * 1000000
   process opts mcntr var
   where
     onError :: SomeException -> IO ()
-    onError ex = putStrLn $ "Round completed with error: " ++ show ex
+    onError ex = log $ "Round completed with error: " ++ show ex
 
 startConnector :: IO (Maybe Connector)
 startConnector = do
   minfo <- resolveConnectorInfo
   case minfo of
     Nothing -> do
-      putStrLn "No RabbitMQ details detected ... "
+      log "No RabbitMQ details detected ... "
       return Nothing
     Just info -> do
-      putStrLn "RabbitMQ details detected!"
+      log "RabbitMQ details detected!"
       let opts = defConnectionOpts {optsLogger = mkInfoLogger, optsSpeedRefreshInterval = 10 * 1000000}
       cntr <- start opts info
       return $ Just cntr

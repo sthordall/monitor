@@ -11,11 +11,13 @@ import Data.Aeson
 import qualified Data.Map as M
 import Data.Text
 import Data.IntSet
+import Helpers
 import Network.AMQP
 import Network.AMQP.Types
 import Network.AMQP.Connector
 import Network.AMQP.Connector.Internal
 import Network.AMQP.Connector.Models
+import Prelude hiding (log)
 
 mkMessage_ :: (ToJSON a) => a -> Message
 mkMessage_ x =
@@ -56,7 +58,7 @@ newChannel cntr = do
 publish :: Connector -> [(M.Map Text Text, Value)] -> IO Bool
 publish cntr msgs =
   publish' cntr msgs `catch` \(e :: AMQPException) -> do
-    putStrLn $ "failed to publish: " ++ show e
+    log $ "failed to publish: " ++ show e
     return False
 
 publish' :: Connector -> [(M.Map Text Text, Value)] -> IO Bool
@@ -72,5 +74,5 @@ publish' cntr msgs = do
       return True
 
 showResult :: ConfirmationResult -> IO ()
-showResult (Partial (a, n, p)) = putStrLn $ "Acks: "++(show . size $ a)++" Nacks: "++(show . size $ n)++" pending: "++(show . size $ p)
-showResult (Complete (a, n)) = putStrLn $ "Acks: "++(show . size $ a)++" Nacks: "++(show . size $ n)
+showResult (Partial (a, n, p)) = log $ "Acks: "++(show . size $ a)++" Nacks: "++(show . size $ n)++" pending: "++(show . size $ p)
+showResult (Complete (a, n)) = log $ "Acks: "++(show . size $ a)++" Nacks: "++(show . size $ n)
