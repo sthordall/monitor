@@ -12,6 +12,7 @@ module Monitor.Engine
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.MVar
+import Control.Exception (SomeException, handle)
 import Control.Monad (void, when)
 import Data.Time (getCurrentTime)
 import Icinga
@@ -37,20 +38,24 @@ startEngine opts = do
 process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
 process opts@EngineOptions {..} mcntr var = do
   putStrLn "Round started ... "
-  (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts opts)
-  now <- getCurrentTime
-  (_, _, isFirstRun) <- swapMVar var (reports, now, False)
-  case mcntr of
-    Just cntr -> do
-      when isFirstRun $ do
-        putStrLn "Ensuring checks with Monitoring Service"
-        postScriptReports cntr reports
-      putStrLn "Reporting results to Monitoring Service"
-      sendScriptReports cntr reports
-    Nothing -> return ()
-  putStrLn $ "Round completed, took " ++ show duration ++ "sec"
+  handle onError $ do
+    (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts opts)
+    now <- getCurrentTime
+    (_, _, isFirstRun) <- swapMVar var (reports, now, False)
+    case mcntr of
+      Just cntr -> do
+        when isFirstRun $ do
+          putStrLn "Ensuring checks with Monitoring Service"
+          postScriptReports cntr reports
+        putStrLn "Reporting results to Monitoring Service"
+        sendScriptReports cntr reports
+      Nothing -> return ()
+    putStrLn $ "Round completed, took " ++ show duration ++ "sec"
   threadDelay $ optsDelayBetweenChecks * 1000000
   process opts mcntr var
+  where
+    onError :: SomeException -> IO ()
+    onError ex = putStrLn $ "Round completed with error: " ++ show ex
 
 startConnector :: IO (Maybe Connector)
 startConnector = do
