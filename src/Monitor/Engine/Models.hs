@@ -1,6 +1,8 @@
 module Monitor.Engine.Models
   ( LastUpdated
   , State
+  , Publish
+  , FirstRun
   , EngineOptions(..)
   ) where
 
@@ -11,7 +13,9 @@ type LastUpdated = UTCTime
 
 type FirstRun = Bool
 
-type State = ([Report], LastUpdated, FirstRun)
+type Publish = [Report] -> FirstRun -> IO ()
+
+type State = (Report, [Report], LastUpdated)
 
 data EngineOptions = EngineOptions
   { optsMonitor :: Bool
@@ -19,5 +23,7 @@ data EngineOptions = EngineOptions
   , optsDelayBetweenChecks :: Int
   , optsCheckTimeout :: Int
   , optsPath :: FilePath
+  , optsWarnDelay :: Int
+  , optsErrorDelay :: Int
   }
   deriving (Show)

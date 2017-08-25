@@ -35,6 +35,18 @@ optsParser = EngineOptions
       <> short 'p'
       <> metavar "PATH"
       <> help "Path where script to be located" )
+  <*> option auto
+      (  long "warn-delay"
+      <> showDefault
+      <> value 60
+      <> metavar "WARN_DELAY_BETWEEN_CHECKS_SECONDS"
+      <> help "Defines length of delay between checks in seconds, which triggers a warning" )
+  <*> option auto
+      (  long "error-delay"
+      <> showDefault
+      <> value 90
+      <> metavar "ERROR_DELAY_BETWEEN_CHECKS_SECONDS"
+      <> help "Defines length of delay between checks in seconds, which triggers a error" )
 
 optsInfo :: ParserInfo EngineOptions
 optsInfo = info (optsParser <**> helper)

@@ -15,10 +15,12 @@ import Control.Concurrent.MVar
 import Control.Exception (SomeException, handle)
 import Control.Monad (void, when)
 import Data.Time (getCurrentTime)
+import Data.Time.Clock (diffUTCTime)
 import Helpers
 import Icinga
 import Monitor.Engine.Internal
 import Monitor.Engine.Models
+import Monitor.Models
 import Network.AMQP.Connector
 import Prelude hiding (log)
 import System.Environment (lookupEnv)
@@ -28,22 +30,55 @@ startEngine :: EngineOptions -> IO (MVar State)
 startEngine opts = do
   cntr <- startConnector
   state <- initState
-  var <- newMVar state
-  void $ forkIO $ process opts cntr var
-  return var
+  state' <- newMVar state
+  let publish = publishReports cntr
+  void $ forkIO $ process opts state' publish True
+  void $ forkIO $ monitorProcess opts state' publish True
+  return state'
   where
     initState :: IO State
     initState = do
       now <- getCurrentTime
-      return ([], now, True)
+      return (Report "" $ Result OK "", [], now)
 
-process :: EngineOptions -> Maybe Connector -> MVar State -> IO ()
-process opts@EngineOptions {..} mcntr var = do
+monitorProcess :: EngineOptions -> MVar State -> Publish -> FirstRun -> IO ()
+monitorProcess opts@EngineOptions {..} state publish isFirstRun = do
+  log "Process monitor started ..."
+  (_, _, lastUpdated) <- readMVar state
+  report <- monitorReport lastUpdated
+  modifyMVar_ state (\(_, rs, lu) -> pure (report, rs, lu))
+  publish [report] isFirstRun
+  threadDelay $ optsDelayBetweenChecks * 1000000
+  monitorProcess opts state publish False
+  where
+    delayOutput = (++) "Process delay: " . show
+    toNominalDiff = fromInteger . toInteger
+    checkPath = "./checks/monitor/check-process-delay-OK.sh"
+    monitorResult diff
+      | diff >= toNominalDiff optsErrorDelay = Result Error $ delayOutput diff
+      | diff >= toNominalDiff optsWarnDelay = Result Warning $ delayOutput diff
+      | otherwise = Result OK $ delayOutput diff
+    monitorReport lastUpdated =
+      Report checkPath . monitorResult . diffUTCTime lastUpdated <$> getCurrentTime
+
+process :: EngineOptions -> MVar State -> Publish -> FirstRun -> IO ()
+process opts@EngineOptions {..} state publish isFirstRun = do
   log "Round started ... "
   handle onError $ do
     (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts opts)
     now <- getCurrentTime
-    (_, _, isFirstRun) <- swapMVar var (reports, now, False)
+    modifyMVar_ state (\(mr, _, _) -> pure (mr, reports, now))
+    publish reports isFirstRun
+    log $ "Round completed, took " ++ show duration ++ "sec"
+  threadDelay $ optsDelayBetweenChecks * 1000000
+  process opts state publish False
+  where
+    onError :: SomeException -> IO ()
+    onError ex = log $ "Round completed with error: " ++ show ex
+
+publishReports :: Maybe Connector -> [Report] -> FirstRun -> IO ()
+publishReports mcntr reports isFirstRun =
+  handle onError $
     case mcntr of
       Just cntr -> do
         when isFirstRun $ do
@@ -52,12 +87,9 @@ process opts@EngineOptions {..} mcntr var = do
         log "Reporting results to Monitoring Service"
         sendScriptReports cntr reports
       Nothing -> return ()
-    log $ "Round completed, took " ++ show duration ++ "sec"
-  threadDelay $ optsDelayBetweenChecks * 1000000
-  process opts mcntr var
   where
     onError :: SomeException -> IO ()
-    onError ex = log $ "Round completed with error: " ++ show ex
+    onError ex = log $ "Publish failed with error: " ++ show ex
 
 startConnector :: IO (Maybe Connector)
 startConnector = do

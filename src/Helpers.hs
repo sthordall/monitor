@@ -24,6 +24,6 @@ snakeOptions = defaultOptions { AT.fieldLabelModifier = snakeIt }
 
 log :: String -> IO ()
 log msg = do
-  now <- fmap (formatTime defaultTimeLocale "[%H:%M:%S] ") getCurrentTime
+  now <- formatTime defaultTimeLocale "[%H:%M:%S] " <$> getCurrentTime
   putStrLn $ now ++ msg
 
