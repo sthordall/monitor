@@ -8,11 +8,13 @@ import Control.Exception (SomeException, handle)
 import Control.Monad (forM_, unless, when)
 import Control.Monad.IO.Class (liftIO)
 import Data.Text.Lazy (pack)
+import Data.Time (getCurrentTime, formatTime, defaultTimeLocale)
 import EngineOptionsParser
 import Monitor
 import Network.Wai.Middleware.Cors (simpleCors)
 -- import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
+import Prelude hiding (log)
 import System.Exit (exitWith)
 import Web.Scotty
 
@@ -41,5 +43,10 @@ main = do
     exitWith $ reportsToExitCode reports
   where
     onError :: SomeException -> IO ()
-    onError ex = putStrLn $ "Monitor failed with error: " ++ show ex
+    onError ex = log $ "Monitor failed with error: " ++ show ex
+
+log :: String -> IO ()
+log msg = do
+  now <- formatTime defaultTimeLocale "[%H:%M:%S] " <$> getCurrentTime
+  putStrLn $ now ++ msg
 

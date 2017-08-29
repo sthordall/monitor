@@ -53,7 +53,7 @@ monitorProcess opts@EngineOptions {..} state publish isFirstRun = do
   where
     delayOutput = (++) "Process delay: " . show
     toNominalDiff = fromInteger . toInteger
-    checkPath = "./checks/monitor/check-process-delay-OK.sh"
+    checkPath = "./checks/monitor/check-is-monitor-active.sh"
     monitorResult diff
       | diff >= toNominalDiff optsErrorDelay = Result Error $ delayOutput diff
       | diff >= toNominalDiff optsWarnDelay = Result Warning $ delayOutput diff

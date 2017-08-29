@@ -55,6 +55,7 @@ executable monitor
                      , wai-middleware-static >= 0.8.1 && < 0.9
                      , scotty >= 0.11.0 && < 0.12
                      , text >= 1.2.2.1 && < 1.3
+                     , time >= 1.6.0.1 && < 1.7
                      , optparse-applicative >= 0.13.2.0 && < 0.14
   hs-source-dirs:      app
   default-language:    Haskell2010
