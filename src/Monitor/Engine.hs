@@ -13,7 +13,7 @@ module Monitor.Engine
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.MVar
 import Control.Exception (SomeException, handle)
-import Control.Monad (void, when)
+import Control.Monad (void)
 import Data.Time (getCurrentTime)
 import Data.Time.Clock (diffUTCTime)
 import Helpers
@@ -47,9 +47,9 @@ monitorProcess opts@EngineOptions {..} state publish isFirstRun = do
   (_, _, lastUpdated) <- readMVar state
   report <- monitorReport lastUpdated
   modifyMVar_ state (\(_, rs, lu) -> pure (report, rs, lu))
-  publish [report] isFirstRun
+  publishSucceeded <- publish [report] isFirstRun
   threadDelay $ optsDelayBetweenChecks * 1000000
-  monitorProcess opts state publish False
+  monitorProcess opts state publish $ not publishSucceeded && False
   where
     delayOutput = (++) "Process delay: " . show
     toNominalDiff = fromInteger . toInteger
@@ -64,32 +64,38 @@ monitorProcess opts@EngineOptions {..} state publish isFirstRun = do
 process :: EngineOptions -> MVar State -> Publish -> FirstRun -> IO ()
 process opts@EngineOptions {..} state publish isFirstRun = do
   log "Round started ... "
-  handle onError $ do
+  succeeded <- handle onError $ do
     (duration, reports) <- timeItT (detectScripts optsPath >>= executeScripts opts)
     now <- getCurrentTime
     modifyMVar_ state (\(mr, _, _) -> pure (mr, reports, now))
-    publish reports isFirstRun
+    publishSucceeded <- publish reports isFirstRun
     log $ "Round completed, took " ++ show duration ++ "sec"
+    return publishSucceeded
   threadDelay $ optsDelayBetweenChecks * 1000000
-  process opts state publish False
+  process opts state publish $ not succeeded && isFirstRun
   where
-    onError :: SomeException -> IO ()
-    onError ex = log $ "Round completed with error: " ++ show ex
+    onError :: SomeException -> IO Bool
+    onError ex = do
+      log $ "Round completed with error: " ++ show ex
+      return False
 
-publishReports :: Maybe Connector -> [Report] -> FirstRun -> IO ()
+publishReports :: Maybe Connector -> [Report] -> FirstRun -> IO Bool
 publishReports mcntr reports isFirstRun =
   handle onError $
     case mcntr of
       Just cntr -> do
-        when isFirstRun $ do
+        firstRunSucceeded <- (||) (not isFirstRun) <$> do
           log "Ensuring checks with Monitoring Service"
           postScriptReports cntr reports
-        log "Reporting results to Monitoring Service"
-        sendScriptReports cntr reports
-      Nothing -> return ()
+        return $ (&&) firstRunSucceeded <$> do
+          log "Reporting results to Monitoring Service"
+          sendScriptReports cntr reports
+      Nothing -> return False
   where
-    onError :: SomeException -> IO ()
-    onError ex = log $ "Publish failed with error: " ++ show ex
+    onError :: SomeException -> IO Bool
+    onError ex = do
+      log $ "Publish failed with error: " ++ show ex
+      return False
 
 startConnector :: IO (Maybe Connector)
 startConnector = do

@@ -62,8 +62,8 @@ toCheckReport Report {..} =
        , pluginOutput = details
        }
 
-postScriptReports :: Connector -> [Report] -> IO ()
-postScriptReports cntr reps = void $ publish cntr $ map prep reps
+postScriptReports :: Connector -> [Report] -> IO Bool
+postScriptReports cntr reps = publish cntr $ map prep reps
   where
     prep rep = do
       let info = toCheckInfo rep
@@ -83,8 +83,8 @@ postScriptReports cntr reps = void $ publish cntr $ map prep reps
         PassiveCheck ch -> (headers, toJSON ch)
         ActiveCheck ch -> (headers, toJSON ch)
 
-sendScriptReports :: Connector -> [Report] -> IO ()
-sendScriptReports cntr reps = void $ publish cntr $ map prep reps
+sendScriptReports :: Connector -> [Report] -> IO Bool
+sendScriptReports cntr reps = publish cntr $ map prep reps
   where
     prep rep = do
       let info = toCheckInfo rep

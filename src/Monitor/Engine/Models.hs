@@ -13,7 +13,7 @@ type LastUpdated = UTCTime
 
 type FirstRun = Bool
 
-type Publish = [Report] -> FirstRun -> IO ()
+type Publish = [Report] -> FirstRun -> IO Bool
 
 type State = (Report, [Report], LastUpdated)
 
