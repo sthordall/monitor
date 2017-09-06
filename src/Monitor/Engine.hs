@@ -49,7 +49,7 @@ monitorProcess opts@EngineOptions {..} state publish isFirstRun = do
   modifyMVar_ state (\(_, rs, lu) -> pure (report, rs, lu))
   publishSucceeded <- publish [report] isFirstRun
   threadDelay $ optsDelayBetweenChecks * 1000000
-  monitorProcess opts state publish $ not publishSucceeded && False
+  monitorProcess opts state publish $ not publishSucceeded && isFirstRun
   where
     delayOutput = (++) "Process delay: " . show
     toNominalDiff = fromInteger . toInteger
@@ -84,10 +84,10 @@ publishReports mcntr reports isFirstRun =
   handle onError $
     case mcntr of
       Just cntr -> do
-        firstRunSucceeded <- (||) (not isFirstRun) <$> do
+        firstRunSucceeded <- runWhenOrDefault isFirstRun True $ do
           log "Ensuring checks with Monitoring Service"
           postScriptReports cntr reports
-        return $ (&&) firstRunSucceeded <$> do
+        runWhenOrDefault firstRunSucceeded False $ do
           log "Reporting results to Monitoring Service"
           sendScriptReports cntr reports
       Nothing -> return False
@@ -96,6 +96,8 @@ publishReports mcntr reports isFirstRun =
     onError ex = do
       log $ "Publish failed with error: " ++ show ex
       return False
+    runWhenOrDefault :: Bool -> Bool -> IO Bool -> IO Bool
+    runWhenOrDefault cond def action = if cond then action else return def
 
 startConnector :: IO (Maybe Connector)
 startConnector = do
